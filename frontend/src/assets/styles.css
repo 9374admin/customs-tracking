@@ -1,0 +1,34 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; }
+
+.step-status-selecionar { color: #909399; }
+.step-status-em_curso { color: #f56c6c; font-weight: 600; }
+.step-status-concluido { color: #67c23a; font-weight: 600; }
+
+.step-tag-selecionar { background: #f4f4f5; color: #909399; border-color: #dcdfe6; }
+.step-tag-em_curso { background: #fef0f0; color: #f56c6c; border-color: #fbc4c4; }
+.step-tag-concluido { background: #f0f9eb; color: #67c23a; border-color: #c2e7b0; }
+
+.chat-message { margin-bottom: 12px; }
+.chat-message-self { text-align: right; }
+.chat-message-other { text-align: left; }
+.chat-bubble {
+  display: inline-block; padding: 8px 14px; border-radius: 8px; max-width: 70%;
+  word-wrap: break-word; text-align: left;
+}
+.chat-bubble-self { background: #409eff; color: white; }
+.chat-bubble-other { background: #fff; color: #333; border: 1px solid #e4e7ed; }
+.chat-meta { font-size: 11px; color: #999; margin-top: 2px; }
+.mention-highlight { background: #fff3cd; padding: 2px 4px; border-radius: 3px; font-weight: 600; }
+
+.stat-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.stat-number { font-size: 28px; font-weight: 700; color: #409eff; }
+.stat-label { font-size: 13px; color: #909399; margin-top: 4px; }
+
+.online-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #67c23a; margin-right: 6px; }
+.offline-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #c0c4cc; margin-right: 6px; }
+
+.step-operated-info { font-size: 10px; color: #c0c4cc; margin-top: 2px; line-height: 1.3; }
+.el-table .row-pago td {
+  background-color: #e1f3d8 !important;
+}

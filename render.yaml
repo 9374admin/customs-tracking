@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: customs-tracking
+    env: node
+    plan: free
+    buildCommand: npm install && cd ../frontend && npm install && npx vite build
+    startCommand: npm start
+    rootDir: backend
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 22.0.0
+      - key: DATABASE_URL
+        sync: false
