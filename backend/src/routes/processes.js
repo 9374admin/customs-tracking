@@ -1,7 +1,21 @@
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const { db, STEP_NAMES, ensureSteps, logOperation } = require('../db');
-const { auth } = require('../middleware/auth');
+const { auth, requireRole } = require('../middleware/auth');
 const router = express.Router();
+
+const uploadsDir = path.join(__dirname, '..', '..', 'uploads', 'steps');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+const storage = multer.diskStorage({
+  destination: uploadsDir,
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${Date.now()}-${Math.round(Math.random()*1e9)}${ext}`);
+  }
+});
+const upload = multer({ storage, limits: { fileSize: 80 * 1024 * 1024 } });
 
 const STEP_LABELS = {
   licenca_aprovacao: 'Licença/Aprovação', du: 'DU', talex: 'Talex', transporte: 'Transporte',
@@ -30,7 +44,7 @@ router.get('/', auth, async (req, res) => {
     }
     if (empresa) { where += ' AND p.empresa = ?'; params.push(empresa); }
     const countRow = await db.get(`SELECT COUNT(*) as c FROM processes p WHERE ${where}`, params);
-    let sql = `SELECT p.id, p.seq_no, p.empresa, p.bl_number, p.container_number, p.prevista_date, p.fee_status, p.fee_amount, p.du_number, p.notes, p.created_at, p.updated_at FROM processes p WHERE ${where} ORDER BY p.updated_at DESC`;
+    let sql = `SELECT p.id, p.seq_no, p.empresa, p.bl_number, p.container_number, p.prevista_date, p.fee_status, p.fee_amount, p.du_number, p.fecho, p.notes, p.created_at, p.updated_at FROM processes p WHERE ${where} ORDER BY p.updated_at DESC`;
     const offset = (parseInt(page) - 1) * parseInt(limit);
     sql += ` LIMIT ? OFFSET ?`;
     params.push(parseInt(limit), offset);
@@ -61,12 +75,12 @@ router.get('/:id', auth, async (req, res) => {
 
 router.post('/', auth, async (req, res) => {
   try {
-    const { empresa, bl_number, container_number, prevista_date, fee_status, fee_amount, du_number, notes } = req.body;
+    const { empresa, bl_number, container_number, prevista_date, fee_status, fee_amount, du_number, fecho, notes } = req.body;
     const maxSeq = await db.get('SELECT MAX(seq_no) as m FROM processes');
     const seqNo = (maxSeq.m || 0) + 1;
     const info = await db.run(
-      `INSERT INTO processes (seq_no, empresa, bl_number, container_number, prevista_date, fee_status, fee_amount, du_number, notes, created_by, updated_by) VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
-      [seqNo, empresa || '', bl_number || '', container_number || '', prevista_date || '', fee_status || '', fee_amount || '', du_number || '', notes || '', req.user.id, req.user.id]
+      `INSERT INTO processes (seq_no, empresa, bl_number, container_number, prevista_date, fee_status, fee_amount, du_number, fecho, notes, created_by, updated_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
+      [seqNo, empresa || '', bl_number || '', container_number || '', prevista_date || '', fee_status || '', fee_amount || '', du_number || '', fecho || '', notes || '', req.user.id, req.user.id]
     );
     await ensureSteps(info.lastInsertRowid);
     await logOperation(req.user.id, 'create', 'process', info.lastInsertRowid, `Criou processo ${seqNo} - ${empresa || ''}`);
@@ -83,8 +97,9 @@ router.put('/:id', auth, async (req, res) => {
     const id = parseInt(req.params.id);
     const old = await db.get('SELECT * FROM processes WHERE id = ?', [id]);
     if (!old) return res.status(404).json({ error: 'Processo não encontrado' });
-    const { empresa, bl_number, container_number, prevista_date, fee_status, fee_amount, du_number, notes } = req.body;
+    const { seq_no, empresa, bl_number, container_number, prevista_date, fee_status, fee_amount, du_number, fecho, notes } = req.body;
     const updates = {};
+    if (seq_no !== undefined) updates.seq_no = seq_no;
     if (empresa !== undefined) updates.empresa = empresa;
     if (bl_number !== undefined) updates.bl_number = bl_number;
     if (container_number !== undefined) updates.container_number = container_number;
@@ -92,6 +107,7 @@ router.put('/:id', auth, async (req, res) => {
     if (fee_status !== undefined) updates.fee_status = fee_status;
     if (fee_amount !== undefined) updates.fee_amount = fee_amount;
     if (du_number !== undefined) updates.du_number = du_number;
+    if (fecho !== undefined) updates.fecho = fecho;
     if (notes !== undefined) updates.notes = notes;
     const setClauses = Object.keys(updates).map(k => `${k} = ?`);
     const vals = Object.values(updates);
@@ -150,7 +166,7 @@ router.put('/:id/steps/:stepName', auth, async (req, res) => {
   }
 });
 
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, requireRole('admin'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const proc = await db.get('SELECT * FROM processes WHERE id = ?', [id]);
@@ -158,6 +174,49 @@ router.delete('/:id', auth, async (req, res) => {
     await db.run('DELETE FROM processes WHERE id = ?', [id]);
     await logOperation(req.user.id, 'delete', 'process', id, `Eliminou processo ${proc.seq_no} - ${proc.empresa || ''}`);
     req.app.get('io')?.emit('process:deleted', { id });
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.post('/:id/steps/:stepName/files', auth, upload.single('file'), async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const stepName = req.params.stepName;
+    if (!req.file) return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+    const file_url = `/uploads/steps/${req.file.filename}`;
+    const info = await db.run(
+      'INSERT INTO step_files (process_id, step_name, file_url, file_name, file_size, uploaded_by) VALUES (?,?,?,?,?,?)',
+      [id, stepName, file_url, req.file.originalname, req.file.size, req.user.id]
+    );
+    await logOperation(req.user.id, 'upload', 'step_file', info.lastInsertRowid, `Upload ${req.file.originalname} para ${stepName}`);
+    res.json({ id: info.lastInsertRowid, file_url, file_name: req.file.originalname, file_size: req.file.size });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.get('/:id/steps/:stepName/files', auth, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const stepName = req.params.stepName;
+    const files = await db.all('SELECT * FROM step_files WHERE process_id = ? AND step_name = ? ORDER BY uploaded_at DESC', [id, stepName]);
+    res.json(files);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.delete('/:id/steps/:stepName/files/:fileId', auth, async (req, res) => {
+  try {
+    const fileId = parseInt(req.params.fileId);
+    const file = await db.get('SELECT * FROM step_files WHERE id = ?', [fileId]);
+    if (!file) return res.status(404).json({ error: 'Arquivo não encontrado' });
+    const filePath = path.join(uploadsDir, path.basename(file.file_url));
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    await db.run('DELETE FROM step_files WHERE id = ?', [fileId]);
+    await logOperation(req.user.id, 'delete', 'step_file', fileId, `Delete ${file.file_name}`);
     res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: e.message });

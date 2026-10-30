@@ -26,11 +26,22 @@ const SQLITE_SCHEMA = `
     container_number TEXT,
     prevista_date TEXT,
     fee_status TEXT DEFAULT '',
+    fecho TEXT DEFAULT '',
     notes TEXT DEFAULT '',
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     created_by INTEGER REFERENCES users(id),
     updated_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_by INTEGER REFERENCES users(id)
+  );
+  CREATE TABLE IF NOT EXISTS step_files (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    process_id INTEGER NOT NULL REFERENCES processes(id) ON DELETE CASCADE,
+    step_name TEXT NOT NULL,
+    file_url TEXT NOT NULL,
+    file_name TEXT NOT NULL,
+    file_size INTEGER,
+    uploaded_by INTEGER REFERENCES users(id),
+    uploaded_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
   CREATE TABLE IF NOT EXISTS process_steps (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -96,11 +107,22 @@ const PG_SCHEMA = `
     container_number TEXT,
     prevista_date TEXT,
     fee_status TEXT DEFAULT '',
+    fecho TEXT DEFAULT '',
     notes TEXT DEFAULT '',
     created_at TEXT NOT NULL DEFAULT NOW(),
     created_by INTEGER REFERENCES users(id),
     updated_at TEXT NOT NULL DEFAULT NOW(),
     updated_by INTEGER REFERENCES users(id)
+  );
+  CREATE TABLE IF NOT EXISTS step_files (
+    id SERIAL PRIMARY KEY,
+    process_id INTEGER NOT NULL REFERENCES processes(id) ON DELETE CASCADE,
+    step_name TEXT NOT NULL,
+    file_url TEXT NOT NULL,
+    file_name TEXT NOT NULL,
+    file_size INTEGER,
+    uploaded_by INTEGER REFERENCES users(id),
+    uploaded_at TEXT NOT NULL DEFAULT NOW()
   );
   CREATE TABLE IF NOT EXISTS process_steps (
     id SERIAL PRIMARY KEY,
@@ -173,6 +195,9 @@ async function initDB() {
   }
   if (!colNames.includes('fee_amount')) {
     await driver.exec('ALTER TABLE processes ADD COLUMN fee_amount TEXT DEFAULT \'\'');
+  }
+  if (!colNames.includes('fecho')) {
+    await driver.exec('ALTER TABLE processes ADD COLUMN fecho TEXT DEFAULT \'\'');
   }
 }
 

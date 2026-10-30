@@ -67,7 +67,11 @@ router.put('/:id', auth, requireRole('admin'), async (req, res) => {
 
 router.delete('/:id', auth, requireRole('admin'), async (req, res) => {
   if (parseInt(req.params.id) === req.user.id) return res.status(400).json({ error: 'Não pode eliminar a si mesmo' });
-  await db.run('UPDATE users SET is_active = 0 WHERE id = ?', [req.params.id]);
+  if (req.query.hard === 'true') {
+    await db.run('DELETE FROM users WHERE id = ?', [req.params.id]);
+  } else {
+    await db.run('UPDATE users SET is_active = 0 WHERE id = ?', [req.params.id]);
+  }
   res.json({ ok: true });
 });
 

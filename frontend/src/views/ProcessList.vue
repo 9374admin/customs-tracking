@@ -15,45 +15,55 @@
           <el-button @click="exportExcel" :loading="exporting"><el-icon><Download/></el-icon> Excel</el-button>
           <el-button @click="exportPDF" :loading="exporting"><el-icon><Download/></el-icon> PDF</el-button>
           <el-button type="primary" @click="showCreate = true" v-if="auth.canEdit"><el-icon><Plus/></el-icon> Novo Processo</el-button>
+          <el-button type="danger" @click="batchDelete" v-if="auth.isAdmin" :disabled="selectedRows.length === 0"><el-icon><Delete/></el-icon> Eliminar ({{ selectedRows.length }})</el-button>
         </div>
       </div>
 
       <el-table :data="data" stripe border v-loading="loading"
         max-height="calc(100vh - 220px)"
         :row-class-name="rowClassName"
-        @cell-dblclick="onCellDblClick">
-        <el-table-column prop="seq_no" label="Nº" width="60" fixed />
-        <el-table-column prop="empresa" label="Empresa" width="120">
+        @cell-dblclick="onCellDblClick"
+        @selection-change="onSelectionChange">
+        <el-table-column type="selection" width="40" v-if="auth.isAdmin" />
+        <el-table-column prop="seq_no" label="Nº" width="55" sortable>
           <template #default="{ row }">
-            <el-input v-model="row.empresa" size="small" style="font-size: 11px;" @change="saveField(row, 'empresa')" v-if="auth.canEdit" />
+            <div @dblclick="goToDetail(row)" style="cursor: pointer;">
+              <el-input v-model="row.seq_no" size="small" type="number" style="font-size: 13px; width: 50px;" @change="saveField(row, 'seq_no')" v-if="auth.isAdmin" />
+              <span v-else>{{ row.seq_no }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="empresa" label="Empresa" width="90">
+          <template #default="{ row }">
+            <el-input v-model="row.empresa" size="small" style="font-size: 13px;" @change="saveField(row, 'empresa')" v-if="auth.canEdit" />
             <span v-else>{{ row.empresa }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="bl_number" label="Nº BL" width="130">
+        <el-table-column prop="bl_number" label="Nº BL" width="110" fixed="left">
           <template #default="{ row }">
-            <el-input v-model="row.bl_number" size="small" :style="isBlUrgent(row) ? 'font-size: 11px; color: #f56c6c; font-weight: 700;' : 'font-size: 11px;'" @change="saveField(row, 'bl_number')" v-if="auth.canEdit" />
-            <span v-else :style="isBlUrgent(row) ? 'color: #f56c6c; font-weight: 700;' : ''">{{ row.bl_number }}</span>
+            <el-input v-model="row.bl_number" size="small" :style="isBlUrgent(row) ? 'font-size: 13px; color: #cc0000; font-weight: 700;' : 'font-size: 13px;'" @change="saveField(row, 'bl_number')" v-if="auth.canEdit" />
+            <span v-else :style="isBlUrgent(row) ? 'color: #cc0000; font-weight: 700;' : ''">{{ row.bl_number }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="container_number" label="Nº Contentor" width="130">
+        <el-table-column prop="container_number" label="Nº Contentor" width="100">
           <template #default="{ row }">
-            <el-input v-model="row.container_number" size="small" style="font-size: 11px;" @change="saveField(row, 'container_number')" v-if="auth.canEdit" />
+            <el-input v-model="row.container_number" size="small" style="font-size: 13px;" @change="saveField(row, 'container_number')" v-if="auth.canEdit" />
             <span v-else>{{ row.container_number }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="prevista_date" label="Prevista" width="140">
+        <el-table-column prop="prevista_date" label="Prevista" width="100">
           <template #default="{ row }">
-            <el-date-picker v-model="row.prevista_date" type="date" value-format="YYYY-MM-DD" size="small" style="width: 120px; font-size: 11px;" @change="saveField(row, 'prevista_date')" v-if="auth.canEdit" />
+            <el-date-picker v-model="row.prevista_date" type="date" value-format="YYYY-MM-DD" size="small" style="width: 90px; font-size: 12px;" @change="saveField(row, 'prevista_date')" v-if="auth.canEdit" />
             <span v-else>{{ row.prevista_date }}</span>
           </template>
         </el-table-column>
-        <el-table-column v-for="step in STEP_NAMES" :key="step" :label="STEP_LABELS[step]" width="100" align="center">
+        <el-table-column v-for="step in STEP_NAMES" :key="step" :label="STEP_LABELS[step]" width="85" align="center">
           <template #default="{ row }">
             <div style="display: flex; flex-direction: column; align-items: center;">
-              <el-input v-if="step === 'du' && auth.canEdit" v-model="row.du_number" size="small" placeholder="R..." style="width: 80px; font-size: 10px; margin-bottom: 2px;" @change="saveDuNumber(row)" />
-              <span v-else-if="step === 'du' && row.du_number" style="font-size: 10px; color: #409eff; font-weight: 600; margin-bottom: 2px;">{{ row.du_number }}</span>
+              <el-input v-if="step === 'du' && auth.canEdit" v-model="row.du_number" size="small" placeholder="R..." style="width: 80px; font-size: 12px; margin-bottom: 2px;" @change="saveDuNumber(row)" />
+              <span v-else-if="step === 'du' && row.du_number" style="font-size: 12px; color: #409eff; font-weight: 600; margin-bottom: 2px;">{{ row.du_number }}</span>
               <el-dropdown trigger="click" @command="(cmd) => updateStepInList(row, step, cmd)" v-if="auth.canEdit">
-                <el-tag size="small" :type="getStepTagType(row, step)" style="cursor: pointer; min-width: 56px; text-align: center; display: inline-block;">
+                <el-tag :type="getStepTagType(row, step)" :style="getStepTagStyle(row, step)" style="cursor: pointer; min-width: 64px; text-align: center; display: inline-block; font-size: 12px; padding: 3px 6px;">
                   {{ getStepStatusShort(row, step) }}
                 </el-tag>
                 <template #dropdown>
@@ -72,22 +82,26 @@
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
-              <el-tag v-else size="small" :type="getStepTagType(row, step)" style="min-width: 56px; text-align: center; display: inline-block;">
+              <el-tag v-else :type="getStepTagType(row, step)" :style="getStepTagStyle(row, step)" style="min-width: 64px; text-align: center; display: inline-block; font-size: 12px; padding: 3px 6px;">
                 {{ getStepStatusShort(row, step) }}
               </el-tag>
-              <div v-if="getStepOperatedCode(row, step)" style="font-size: 8px; margin-top: 2px; line-height: 1.2; white-space: nowrap;">
+              <div v-if="getStepOperatedCode(row, step)" style="font-size: 9px; margin-top: 2px; line-height: 1.2; white-space: nowrap;">
                 <span style="color: #409eff; font-weight: 600;">{{ getStepOperatedCode(row, step) }}</span>
                 <span style="color: #c0c4cc;"> {{ getStepOperatedTime(row, step) }}</span>
+              </div>
+              <div style="margin-top: 2px; display: flex; gap: 4px; align-items: center;">
+                <el-icon :size="13" style="cursor: pointer; color: #409eff;" @click="openFileDialog(row.id, step)"><Paperclip /></el-icon>
+                <span v-if="fileCount(row.id, step)" style="font-size: 10px; color: #006400; font-weight: 600; cursor: pointer;" @click="openFileDialog(row.id, step)">{{ fileCount(row.id, step) }}</span>
               </div>
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="Pagamento" width="150" align="center">
+        <el-table-column label="Pagamento" width="120" align="center">
           <template #default="{ row }">
             <div style="display: flex; flex-direction: column; gap: 2px; align-items: center;">
-              <el-input v-model="row.fee_amount" size="small" placeholder="0.00" style="width: 90px; font-size: 10px;" @change="saveFeeAmount(row)" v-if="auth.canEdit" />
-              <span v-else style="font-size: 11px;">{{ row.fee_amount || '-' }}</span>
-              <el-select v-model="row.fee_status" size="small" style="width: 95px; font-size: 10px;" @change="saveFeeStatus(row)" v-if="auth.canEdit">
+              <el-input v-model="row.fee_amount" size="small" placeholder="0.00" style="width: 80px; font-size: 11px;" @change="saveFeeAmount(row)" v-if="auth.canEdit" />
+              <span v-else style="font-size: 12px;">{{ row.fee_amount || '-' }}</span>
+              <el-select v-model="row.fee_status" size="small" style="width: 85px; font-size: 11px;" @change="saveFeeStatus(row)" v-if="auth.canEdit">
                 <el-option label="Por escolher" value="" />
                 <el-option label="Em cobrança" value="em_cobranca" />
                 <el-option label="Pago" value="pago" />
@@ -98,9 +112,25 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="updated_at" label="Atualizado" width="140">
-          <template #default="{ row }">{{ formatDateTime(row.updated_at) }}</template>
+        <el-table-column label="Fecho" width="120" align="center">
+          <template #default="{ row }">
+            <div style="display: flex; flex-direction: column; gap: 2px; align-items: center;">
+              <el-select v-model="row.fecho" size="small" style="width: 85px; font-size: 11px;" @change="saveField(row, 'fecho')" v-if="auth.canEdit">
+                <el-option label="Aberto" value="" />
+                <el-option label="Fechado" value="fechado" />
+              </el-select>
+              <el-tag v-else size="small" :type="row.fecho === 'fechado' ? 'success' : 'info'">
+                {{ row.fecho === 'fechado' ? 'Fechado' : 'Aberto' }}
+              </el-tag>
+              <div style="margin-top: 2px; display: flex; gap: 4px; align-items: center;">
+                <el-icon :size="13" style="cursor: pointer; color: #409eff;" @click="openFileDialog(row.id, 'fecho')"><Paperclip /></el-icon>
+                <span v-if="fileCount(row.id, 'fecho')" style="font-size: 10px; color: #006400; font-weight: 600; cursor: pointer;" @click="openFileDialog(row.id, 'fecho')">{{ fileCount(row.id, 'fecho') }}</span>
+              </div>
+            </div>
+          </template>
         </el-table-column>
+
+
       </el-table>
 
       <div style="display: flex; justify-content: center; margin-top: 16px;">
@@ -123,12 +153,46 @@
             <el-option label="Pago" value="pago" />
           </el-select>
         </el-form-item>
+        <el-form-item label="Fecho">
+          <el-select v-model="createForm.fecho" style="width: 100%;">
+            <el-option label="Aberto" value="" />
+            <el-option label="Fechado" value="fechado" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="Observações"><el-input v-model="createForm.notes" type="textarea" /></el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="showCreate = false">Cancelar</el-button>
         <el-button type="primary" @click="createProcess" :loading="creating">Criar</el-button>
       </template>
+    </el-dialog>
+
+    <el-dialog v-model="showFileDialog" :title="`Anexos - ${fileDialogStep}`" width="600px">
+      <div style="margin-bottom: 16px;">
+        <el-upload
+          :show-file-list="false"
+          :before-upload="(file) => handleFileUpload(file)"
+          :action="''"
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.zip">
+          <el-button type="primary" :icon="Upload">Enviar arquivo</el-button>
+        </el-upload>
+        <span style="margin-left: 12px; font-size: 12px; color: #909399;">Limite: 80MB</span>
+      </div>
+      <el-table :data="fileList" stripe border v-loading="fileLoading" empty-text="Nenhum arquivo">
+        <el-table-column prop="file_name" label="Arquivo" />
+        <el-table-column prop="file_size" label="Tamanho" width="100">
+          <template #default="{ row }">{{ formatFileSize(row.file_size) }}</template>
+        </el-table-column>
+        <el-table-column prop="uploaded_at" label="Data" width="140">
+          <template #default="{ row }">{{ formatDateTime(row.uploaded_at) }}</template>
+        </el-table-column>
+        <el-table-column label="Ações" width="120" align="center">
+          <template #default="{ row }">
+            <el-button size="small" :icon="Download" @click="downloadFile(row)" />
+            <el-button size="small" type="danger" :icon="Delete" @click="deleteFile(row)" v-if="auth.canEdit" />
+          </template>
+        </el-table-column>
+      </el-table>
     </el-dialog>
   </div>
 </template>
@@ -139,8 +203,10 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useSocketStore } from '../stores/socket'
 import axios from 'axios'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Delete, Upload, Download, Paperclip } from '@element-plus/icons-vue'
 import { STEP_NAMES, STEP_LABELS, STATUS_LABELS, formatDateTime } from '../assets/constants'
+import { feedback, successFeedback } from '../utils/feedback'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -158,7 +224,15 @@ const creating = ref(false)
 const exporting = ref(false)
 const currentTime = ref('')
 let clockTimer = null
-const createForm = ref({ empresa: '', bl_number: '', container_number: '', prevista_date: '', fee_status: '', fee_amount: '', du_number: '', notes: '' })
+
+const showFileDialog = ref(false)
+const fileDialogProcessId = ref(null)
+const fileDialogStep = ref('')
+const fileList = ref([])
+const fileLoading = ref(false)
+const fileCounts = ref({})
+
+const createForm = ref({ empresa: '', bl_number: '', container_number: '', prevista_date: '', fee_status: '', fee_amount: '', du_number: '', fecho: '', notes: '' })
 
 let debounceTimer = null
 function debouncedSearch() {
@@ -187,10 +261,25 @@ function getStepTagType(row, stepName) {
   if (isCustomStep(stepName)) {
     if (status === 'fatura_emitida') return 'danger'
     if (status === 'pago') return 'success'
+    if (status === 'em_curso') return 'warning'
     return ''
   }
-  if (status === 'em_curso') return 'danger'
+  if (status === 'em_curso') return 'warning'
   if (status === 'concluido') return 'success'
+  return ''
+}
+
+function getStepTagStyle(row, stepName) {
+  const step = row.steps?.find(s => s.step_name === stepName)
+  const status = step?.status || 'selecionar'
+  if (stepName === 'detencao' || stepName === 'inspecao') {
+    if (status === 'concluido' || status === 'pago') {
+      return 'border-width: 2px; border-color: #006400;'
+    }
+    if (status === 'em_curso' || status === 'fatura_emitida') {
+      return 'border-width: 2px; border-color: #cc0000; font-weight: 700;'
+    }
+  }
   return ''
 }
 
@@ -212,6 +301,11 @@ function updateClock() {
   currentTime.value = `${now.getFullYear()}-${p(now.getMonth()+1)}-${p(now.getDate())} ${p(now.getHours())}:${p(now.getMinutes())}:${p(now.getSeconds())}`
 }
 
+function goToDetail(row) {
+  feedback()
+  router.push(`/processes/${row.id}`)
+}
+
 async function updateStepInList(row, stepName, newStatus) {
   const step = row.steps?.find(s => s.step_name === stepName)
   if (!step || step.status === newStatus) return
@@ -221,6 +315,7 @@ async function updateStepInList(row, stepName, newStatus) {
     const res = await axios.put(`/api/processes/${row.id}/steps/${stepName}`, { status: newStatus, note: step.note || '' })
     step.operated_code = res.data.operated_by_code || auth.user?.account_code
     step.operated_at = res.data.operated_at
+    successFeedback()
   } catch (e) {
     step.status = oldStatus
     ElMessage.error('Erro ao atualizar etapa')
@@ -230,6 +325,7 @@ async function updateStepInList(row, stepName, newStatus) {
 async function saveField(row, field) {
   try {
     await axios.put(`/api/processes/${row.id}`, { [field]: row[field] || '' })
+    feedback()
   } catch (e) {
     ElMessage.error('Erro ao salvar')
   }
@@ -238,6 +334,7 @@ async function saveField(row, field) {
 async function saveDuNumber(row) {
   try {
     await axios.put(`/api/processes/${row.id}`, { du_number: row.du_number || '' })
+    feedback()
   } catch (e) {
     ElMessage.error('Erro ao salvar Nº DU')
   }
@@ -255,7 +352,16 @@ function isBlUrgent(row) {
   return false
 }
 
+function isDetencaoActive(row) {
+  const detStep = row.steps?.find(s => s.step_name === 'detencao')
+  const insStep = row.steps?.find(s => s.step_name === 'inspecao')
+  const detActive = detStep && detStep.status !== 'selecionar' && detStep.status !== 'concluido' && detStep.status !== 'pago'
+  const insActive = insStep && insStep.status !== 'selecionar' && insStep.status !== 'concluido' && insStep.status !== 'pago'
+  return detActive || insActive
+}
+
 function rowClassName({ row }) {
+  if (isDetencaoActive(row)) return 'row-detencao-active'
   if (row.fee_status === 'pago') return 'row-pago'
   return ''
 }
@@ -263,6 +369,7 @@ function rowClassName({ row }) {
 async function saveFeeAmount(row) {
   try {
     await axios.put(`/api/processes/${row.id}`, { fee_amount: row.fee_amount || '' })
+    feedback()
   } catch (e) {
     ElMessage.error('Erro ao salvar valor')
   }
@@ -271,6 +378,7 @@ async function saveFeeAmount(row) {
 async function saveFeeStatus(row) {
   try {
     await axios.put(`/api/processes/${row.id}`, { fee_status: row.fee_status || '' })
+    feedback()
   } catch (e) {
     ElMessage.error('Erro ao salvar estado')
   }
@@ -297,8 +405,8 @@ async function loadEmpresas() {
 }
 
 function onCellDblClick(row, column) {
-  if (column.property === 'empresa') {
-    router.push(`/processes/${row.id}`)
+  if (column.property === 'empresa' || column.property === 'seq_no') {
+    goToDetail(row)
   }
 }
 
@@ -307,14 +415,111 @@ async function createProcess() {
   try {
     const res = await axios.post('/api/processes', createForm.value)
     ElMessage.success('Processo criado')
+    successFeedback()
     showCreate.value = false
-    createForm.value = { empresa: '', bl_number: '', container_number: '', prevista_date: '', fee_status: '', fee_amount: '', du_number: '', notes: '' }
+    createForm.value = { empresa: '', bl_number: '', container_number: '', prevista_date: '', fee_status: '', fee_amount: '', du_number: '', fecho: '', notes: '' }
     router.push(`/processes/${res.data.id}`)
   } catch (e) {
     ElMessage.error('Erro ao criar processo')
   } finally {
     creating.value = false
   }
+}
+
+async function deleteProcess(row) {
+  try {
+    await ElMessageBox.confirm(`Eliminar processo ${row.seq_no} - ${row.empresa || ''}?`, 'Atenção', { type: 'warning' })
+    await axios.delete(`/api/processes/${row.id}`)
+    ElMessage.success('Processo eliminado')
+    feedback()
+    loadData()
+  } catch (e) {}
+}
+
+const selectedRows = ref([])
+function onSelectionChange(rows) {
+  selectedRows.value = rows
+}
+
+async function batchDelete() {
+  if (selectedRows.value.length === 0) return
+  try {
+    await ElMessageBox.confirm(`Eliminar ${selectedRows.value.length} processo(s)?`, 'Atenção', { type: 'warning' })
+    for (const row of selectedRows.value) {
+      await axios.delete(`/api/processes/${row.id}`)
+    }
+    ElMessage.success(`${selectedRows.value.length} processo(s) eliminado(s)`)
+    feedback()
+    selectedRows.value = []
+    loadData()
+  } catch (e) {}
+}
+
+function fileCount(processId, stepName) {
+  const key = `${processId}_${stepName}`
+  return fileCounts.value[key] || 0
+}
+
+async function openFileDialog(processId, stepName) {
+  feedback()
+  fileDialogProcessId.value = processId
+  fileDialogStep.value = stepName
+  showFileDialog.value = true
+  await loadFileList()
+}
+
+async function loadFileList() {
+  fileLoading.value = true
+  try {
+    const res = await axios.get(`/api/processes/${fileDialogProcessId.value}/steps/${fileDialogStep.value}/files`)
+    fileList.value = res.data
+    fileCounts.value[`${fileDialogProcessId.value}_${fileDialogStep.value}`] = res.data.length
+  } catch (e) {
+    ElMessage.error('Erro ao carregar arquivos')
+  } finally {
+    fileLoading.value = false
+  }
+}
+
+async function handleFileUpload(file) {
+  const maxSize = 80 * 1024 * 1024
+  if (file.size > maxSize) {
+    ElMessage.error('Arquivo muito grande. Limite: 80MB')
+    return false
+  }
+  const formData = new FormData()
+  formData.append('file', file)
+  try {
+    await axios.post(`/api/processes/${fileDialogProcessId.value}/steps/${fileDialogStep.value}/files`, formData)
+    ElMessage.success('Arquivo enviado')
+    successFeedback()
+    loadFileList()
+  } catch (e) {
+    ElMessage.error('Erro ao enviar arquivo')
+  }
+  return false
+}
+
+function downloadFile(file) {
+  feedback()
+  window.open(file.file_url, '_blank')
+}
+
+async function deleteFile(file) {
+  try {
+    await ElMessageBox.confirm(`Eliminar ${file.file_name}?`, 'Atenção', { type: 'warning' })
+    await axios.delete(`/api/processes/${fileDialogProcessId.value}/steps/${fileDialogStep.value}/files/${file.id}`)
+    ElMessage.success('Arquivo eliminado')
+    feedback()
+    loadFileList()
+  } catch (e) {}
+}
+
+function formatFileSize(bytes) {
+  if (!bytes) return ''
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
 }
 
 async function exportExcel() {

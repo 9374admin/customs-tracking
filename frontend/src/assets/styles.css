@@ -1,34 +1,94 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; }
+body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; font-size: 15px; }
 
 .step-status-selecionar { color: #909399; }
-.step-status-em_curso { color: #f56c6c; font-weight: 600; }
-.step-status-concluido { color: #67c23a; font-weight: 600; }
+.step-status-em_curso { color: #e6a200; font-weight: 600; }
+.step-status-concluido { color: #006400; font-weight: 600; }
 
 .step-tag-selecionar { background: #f4f4f5; color: #909399; border-color: #dcdfe6; }
-.step-tag-em_curso { background: #fef0f0; color: #f56c6c; border-color: #fbc4c4; }
-.step-tag-concluido { background: #f0f9eb; color: #67c23a; border-color: #c2e7b0; }
+.step-tag-em_curso { background: #fff8cc; color: #e6a200; border-color: #ffcc00; }
+.step-tag-concluido { background: #c8efd0; color: #006400; border-color: #006400; }
 
 .chat-message { margin-bottom: 12px; }
 .chat-message-self { text-align: right; }
 .chat-message-other { text-align: left; }
 .chat-bubble {
-  display: inline-block; padding: 8px 14px; border-radius: 8px; max-width: 70%;
-  word-wrap: break-word; text-align: left;
+  display: inline-block; padding: 10px 16px; border-radius: 8px; max-width: 70%;
+  word-wrap: break-word; text-align: left; font-size: 15px;
 }
 .chat-bubble-self { background: #409eff; color: white; }
 .chat-bubble-other { background: #fff; color: #333; border: 1px solid #e4e7ed; }
-.chat-meta { font-size: 11px; color: #999; margin-top: 2px; }
+.chat-meta { font-size: 12px; color: #999; margin-top: 2px; }
 .mention-highlight { background: #fff3cd; padding: 2px 4px; border-radius: 3px; font-weight: 600; }
 
-.stat-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-.stat-number { font-size: 28px; font-weight: 700; color: #409eff; }
-.stat-label { font-size: 13px; color: #909399; margin-top: 4px; }
+.stat-card { background: white; border-radius: 8px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.stat-number { font-size: 32px; font-weight: 700; color: #409eff; }
+.stat-label { font-size: 14px; color: #909399; margin-top: 4px; }
 
-.online-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #67c23a; margin-right: 6px; }
+.online-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #006400; margin-right: 6px; }
 .offline-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #c0c4cc; margin-right: 6px; }
 
-.step-operated-info { font-size: 10px; color: #c0c4cc; margin-top: 2px; line-height: 1.3; }
+.step-operated-info { font-size: 11px; color: #c0c4cc; margin-top: 2px; line-height: 1.3; }
 .el-table .row-pago td {
-  background-color: #e1f3d8 !important;
+  background-color: #c8efd0 !important;
+}
+.el-table .row-detencao-active td {
+  background-color: #ffcccc !important;
+}
+
+.el-tag--success {
+  background-color: #c8efd0 !important;
+  color: #006400 !important;
+  border-color: #006400 !important;
+}
+.el-tag--danger {
+  background-color: #ffcccc !important;
+  color: #8b0000 !important;
+  border-color: #cc0000 !important;
+}
+.el-tag--warning {
+  background-color: #fff8cc !important;
+  color: #e6a200 !important;
+  border-color: #ffcc00 !important;
+}
+
+.el-button:active, .el-tag:active, .el-dropdown__item:active, .el-input__inner:active {
+  transform: scale(0.96);
+}
+.el-button, .el-tag, .el-dropdown__item {
+  transition: transform 0.1s ease;
+}
+.el-table__row:active td {
+  transform: scale(0.998);
+}
+
+@keyframes pulse-feedback {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.94); }
+  100% { transform: scale(1); }
+}
+.click-feedback {
+  animation: pulse-feedback 0.15s ease;
+}
+
+.el-table {
+  font-size: 14px;
+}
+.el-table th .cell {
+  font-size: 13px;
+  font-weight: 700;
+  padding-left: 6px;
+  padding-right: 6px;
+}
+.el-table td .cell {
+  padding: 4px 6px;
+}
+.el-input__inner {
+  font-size: 14px;
+}
+.el-menu-item {
+  font-size: 15px;
+}
+.el-dialog__body {
+  font-size: 15px;
 }

@@ -24,11 +24,12 @@
       <el-table-column prop="created_at" label="Criado em" width="160">
         <template #default="{ row }">{{ formatDateTime(row.created_at) }}</template>
       </el-table-column>
-      <el-table-column label="Ações" width="180">
+      <el-table-column label="Ações" width="240">
         <template #default="{ row }">
           <el-button size="small" @click="editUser(row)">Editar</el-button>
           <el-button size="small" @click="resetPassword(row)">Senha</el-button>
-          <el-button size="small" type="danger" @click="deleteUser(row)" v-if="row.id !== auth.user?.id">Desativar</el-button>
+          <el-button size="small" type="warning" @click="deleteUser(row)" v-if="row.id !== auth.user?.id">Desativar</el-button>
+          <el-button size="small" type="danger" @click="hardDeleteUser(row)" v-if="row.id !== auth.user?.id">Eliminar</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -89,6 +90,7 @@ import { useAuthStore } from '../stores/auth'
 import axios from 'axios'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { formatDateTime } from '../assets/constants'
+import { feedback, successFeedback } from '../utils/feedback'
 
 const auth = useAuthStore()
 const users = ref([])
@@ -119,6 +121,7 @@ async function createUser() {
   try {
     await axios.post('/api/users', createForm.value)
     ElMessage.success('Utilizador criado')
+    successFeedback()
     showCreate.value = false
     createForm.value = { username: '', display_name: '', account_code: '', role: 'operator', password: '' }
     loadData()
@@ -130,6 +133,7 @@ async function createUser() {
 }
 
 function editUser(row) {
+  feedback()
   editForm.value = { ...row }
   showEdit.value = true
 }
@@ -142,6 +146,7 @@ async function saveEdit() {
       role: editForm.value.role
     })
     ElMessage.success('Atualizado')
+    successFeedback()
     showEdit.value = false
     loadData()
   } catch (e) {
@@ -150,6 +155,7 @@ async function saveEdit() {
 }
 
 function resetPassword(row) {
+  feedback()
   resetForm.value = { id: row.id, password: '' }
   showReset.value = true
 }
@@ -158,6 +164,7 @@ async function saveReset() {
   try {
     await axios.put(`/api/users/${resetForm.value.id}`, { password: resetForm.value.password })
     ElMessage.success('Senha redefinida')
+    successFeedback()
     showReset.value = false
   } catch (e) {
     ElMessage.error('Erro')
@@ -168,6 +175,7 @@ async function toggleActive(row, val) {
   try {
     await axios.put(`/api/users/${row.id}`, { is_active: val })
     row.is_active = val ? 1 : 0
+    feedback()
   } catch (e) {
     ElMessage.error('Erro')
   }
@@ -178,6 +186,17 @@ async function deleteUser(row) {
     await ElMessageBox.confirm(`Desativar ${row.display_name}?`, 'Atenção', { type: 'warning' })
     await axios.delete(`/api/users/${row.id}`)
     ElMessage.success('Utilizador desativado')
+    feedback()
+    loadData()
+  } catch (e) {}
+}
+
+async function hardDeleteUser(row) {
+  try {
+    await ElMessageBox.confirm(`Eliminar permanentemente ${row.display_name}? Esta ação não pode ser desfeita.`, 'Atenção', { type: 'error' })
+    await axios.delete(`/api/users/${row.id}?hard=true`)
+    ElMessage.success('Utilizador eliminado')
+    feedback()
     loadData()
   } catch (e) {}
 }

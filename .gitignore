@@ -7,4 +7,5 @@ backend/node_modules
 uploads/*
 !uploads/.gitkeep
 .env
-.DS_Store
+.DS_Store.arts/
+*.log

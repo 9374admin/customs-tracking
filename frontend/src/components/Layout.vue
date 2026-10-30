@@ -1,6 +1,6 @@
 <template>
   <el-container style="height: 100vh">
-    <el-aside width="220px" style="background: #304156">
+    <el-aside :width="sidebarCollapsed ? '0px' : '220px'" style="background: #304156; transition: width 0.3s ease; overflow: hidden;">
       <div style="height: 60px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; font-weight: 700;">
         Despacho Aduaneiro
       </div>
@@ -15,7 +15,13 @@
 
     <el-container>
       <el-header style="background: #fff; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
-        <div style="font-size: 18px; font-weight: 600; color: #333;">{{ $route.meta.title || 'Sistema' }}</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <el-icon :size="20" style="cursor: pointer; color: #304156;" @click="sidebarCollapsed = !sidebarCollapsed">
+            <Fold v-if="!sidebarCollapsed" />
+            <Expand v-else />
+          </el-icon>
+          <div style="font-size: 18px; font-weight: 600; color: #333;">{{ $route.meta.title || 'Sistema' }}</div>
+        </div>
         <div style="display: flex; align-items: center; gap: 16px;">
           <div style="display: flex; align-items: center; gap: 4px;">
             <span class="online-dot"></span>
@@ -66,6 +72,7 @@ const auth = useAuthStore()
 const socketStore = useSocketStore()
 const showNotifications = ref(false)
 const notifications = ref([])
+const sidebarCollapsed = ref(false)
 
 const unreadCount = computed(() => notifications.value.filter(n => !n.is_read).length)
 
