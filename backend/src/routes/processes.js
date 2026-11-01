@@ -20,7 +20,7 @@ const upload = multer({ storage, limits: { fileSize: 80 * 1024 * 1024 } });
 const STEP_LABELS = {
   licenca_aprovacao: 'Licença/Aprovação', du: 'DU', talex: 'Talex',
   cnca: 'CNCA', nota_cnca: 'NOTA', recibo: 'Recibo',
-  transporte: 'Transporte', nota: 'NOTA', legalizacao: 'Legalização', delivery: 'Delivery', inspecao: 'Inspeção',
+  transporte: 'Transporte', legalizacao: 'Legalização', delivery: 'Delivery', inspecao: 'Estado',
   detencao: 'Detenção', sobrestadia: 'Sobrestadia', porto: 'Porto', terminal: 'Terminal', entregue: 'Entregue'
 };
 

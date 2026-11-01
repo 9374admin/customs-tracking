@@ -67,7 +67,12 @@
                 </el-tag>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <template v-if="isCustomStep(step)">
+                    <template v-if="step === 'inspecao'">
+                      <el-dropdown-item command="selecionar">Por escolher</el-dropdown-item>
+                      <el-dropdown-item command="inspection">Inspection</el-dropdown-item>
+                      <el-dropdown-item command="liberado">Liberado</el-dropdown-item>
+                    </template>
+                    <template v-else-if="isCustomStep(step)">
                       <el-dropdown-item command="selecionar">Por escolher</el-dropdown-item>
                       <el-dropdown-item command="em_curso">Em candidatura</el-dropdown-item>
                       <el-dropdown-item command="fatura_emitida">Fatura emitida não paga</el-dropdown-item>
@@ -248,6 +253,9 @@ function isCustomStep(stepName) {
 function getStepStatusShort(row, stepName) {
   const step = row.steps?.find(s => s.step_name === stepName)
   const status = step?.status || 'selecionar'
+  if (stepName === 'inspecao') {
+    return { selecionar: 'Sel.', inspection: 'Inspect.', liberado: 'Liberado' }[status] || 'Sel.'
+  }
   if (isCustomStep(stepName)) {
     return { selecionar: 'Sel.', em_curso: 'Cand.', fatura_emitida: 'Fatura', pago: 'Pago' }[status] || 'Sel.'
   }
@@ -257,6 +265,11 @@ function getStepStatusShort(row, stepName) {
 function getStepTagType(row, stepName) {
   const step = row.steps?.find(s => s.step_name === stepName)
   const status = step?.status || 'selecionar'
+  if (stepName === 'inspecao') {
+    if (status === 'inspection') return 'danger'
+    if (status === 'liberado') return 'success'
+    return ''
+  }
   if (isCustomStep(stepName)) {
     if (status === 'fatura_emitida') return 'danger'
     if (status === 'pago') return 'success'
@@ -271,7 +284,16 @@ function getStepTagType(row, stepName) {
 function getStepTagStyle(row, stepName) {
   const step = row.steps?.find(s => s.step_name === stepName)
   const status = step?.status || 'selecionar'
-  if (stepName === 'detencao' || stepName === 'inspecao') {
+  if (stepName === 'inspecao') {
+    if (status === 'inspection') {
+      return 'background: #cc0000; color: #fff; border-color: #cc0000; font-weight: 700; border-width: 2px;'
+    }
+    if (status === 'liberado') {
+      return 'background: #006400; color: #fff; border-color: #006400; font-weight: 700; border-width: 2px;'
+    }
+    return ''
+  }
+  if (stepName === 'detencao') {
     if (status === 'concluido' || status === 'pago') {
       return 'border-width: 2px; border-color: #006400;'
     }
