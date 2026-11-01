@@ -1,5 +1,5 @@
 export const STEP_NAMES = [
-  'licenca_aprovacao', 'du', 'talex', 'transporte', 'nota',
+  'licenca_aprovacao', 'du', 'talex', 'cnca', 'nota_cnca', 'recibo', 'transporte', 'nota',
   'legalizacao', 'delivery', 'inspecao', 'detencao',
   'sobrestadia', 'porto', 'terminal', 'entregue'
 ]
@@ -8,6 +8,9 @@ export const STEP_LABELS = {
   licenca_aprovacao: 'Licença/Aprovação',
   du: 'DU',
   talex: 'Talex',
+  cnca: 'CNCA',
+  nota_cnca: 'NOTA',
+  recibo: 'Recibo',
   transporte: 'Transporte',
   nota: 'NOTA',
   legalizacao: 'Legalização',

@@ -25,11 +25,10 @@
         @cell-dblclick="onCellDblClick"
         @selection-change="onSelectionChange">
         <el-table-column type="selection" width="40" v-if="auth.isAdmin" />
-        <el-table-column prop="seq_no" label="Nº" width="55" sortable>
+        <el-table-column prop="seq_no" label="Nº" width="50" sortable align="center">
           <template #default="{ row }">
-            <div @dblclick="goToDetail(row)" style="cursor: pointer;">
-              <el-input v-model="row.seq_no" size="small" type="number" style="font-size: 13px; width: 50px;" @change="saveField(row, 'seq_no')" v-if="auth.isAdmin" />
-              <span v-else>{{ row.seq_no }}</span>
+            <div @dblclick="goToDetail(row)" style="cursor: pointer; font-weight: 700; font-size: 14px;">
+              {{ row.seq_no }}
             </div>
           </template>
         </el-table-column>
@@ -39,10 +38,10 @@
             <span v-else>{{ row.empresa }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="bl_number" label="Nº BL" width="110" fixed="left">
+        <el-table-column prop="bl_number" label="Nº BL" width="120" fixed="left">
           <template #default="{ row }">
-            <el-input v-model="row.bl_number" size="small" :style="isBlUrgent(row) ? 'font-size: 13px; color: #cc0000; font-weight: 700;' : 'font-size: 13px;'" @change="saveField(row, 'bl_number')" v-if="auth.canEdit" />
-            <span v-else :style="isBlUrgent(row) ? 'color: #cc0000; font-weight: 700;' : ''">{{ row.bl_number }}</span>
+            <el-input v-model="row.bl_number" size="small" :style="isBlUrgent(row) ? 'font-size: 16px; color: #cc0000; font-weight: 700; width: 100%;' : 'font-size: 16px; width: 100%;'" @change="saveField(row, 'bl_number')" v-if="auth.canEdit" />
+            <span v-else :style="isBlUrgent(row) ? 'color: #cc0000; font-weight: 700; font-size: 16px;' : 'font-size: 16px;'">{{ row.bl_number }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="container_number" label="Nº Contentor" width="100">

@@ -18,8 +18,9 @@ const storage = multer.diskStorage({
 const upload = multer({ storage, limits: { fileSize: 80 * 1024 * 1024 } });
 
 const STEP_LABELS = {
-  licenca_aprovacao: 'Licença/Aprovação', du: 'DU', talex: 'Talex', transporte: 'Transporte',
-  nota: 'NOTA', legalizacao: 'Legalização', delivery: 'Delivery', inspecao: 'Inspeção',
+  licenca_aprovacao: 'Licença/Aprovação', du: 'DU', talex: 'Talex',
+  cnca: 'CNCA', nota_cnca: 'NOTA', recibo: 'Recibo',
+  transporte: 'Transporte', nota: 'NOTA', legalizacao: 'Legalização', delivery: 'Delivery', inspecao: 'Inspeção',
   detencao: 'Detenção', sobrestadia: 'Sobrestadia', porto: 'Porto', terminal: 'Terminal', entregue: 'Entregue'
 };
 
@@ -44,7 +45,7 @@ router.get('/', auth, async (req, res) => {
     }
     if (empresa) { where += ' AND p.empresa = ?'; params.push(empresa); }
     const countRow = await db.get(`SELECT COUNT(*) as c FROM processes p WHERE ${where}`, params);
-    let sql = `SELECT p.id, p.seq_no, p.empresa, p.bl_number, p.container_number, p.prevista_date, p.fee_status, p.fee_amount, p.du_number, p.fecho, p.notes, p.created_at, p.updated_at FROM processes p WHERE ${where} ORDER BY p.updated_at DESC`;
+    let sql = `SELECT p.id, p.seq_no, p.empresa, p.bl_number, p.container_number, p.prevista_date, p.fee_status, p.fee_amount, p.du_number, p.fecho, p.notes, p.created_at, p.updated_at FROM processes p WHERE ${where} ORDER BY p.seq_no ASC`;
     const offset = (parseInt(page) - 1) * parseInt(limit);
     sql += ` LIMIT ? OFFSET ?`;
     params.push(parseInt(limit), offset);
