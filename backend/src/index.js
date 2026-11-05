@@ -26,6 +26,7 @@ app.use('/uploads', express.static(uploadsDir));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/auth'));
 app.use('/api/processes', require('./routes/processes'));
+app.use('/api/exporta', require('./routes/exporta'));
 app.use('/api/stats', require('./routes/stats'));
 app.use('/api/export', require('./routes/export'));
 app.use('/api/logs', require('./routes/logs'));

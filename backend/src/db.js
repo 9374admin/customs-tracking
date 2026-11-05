@@ -7,6 +7,11 @@ const STEP_NAMES = [
   'sobrestadia', 'porto', 'terminal', 'entregue'
 ];
 
+const EXPORT_STEP_NAMES = [
+  'booking', 'ctt', 'draft', 'vgm', 'draft_final', 'partida', 'chegado',
+  'estado_ctt', 'estado_selo', 'entrada_terminal', 'frete', 'fecho'
+];
+
 const SQLITE_SCHEMA = `
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -85,6 +90,45 @@ const SQLITE_SCHEMA = `
     related_id INTEGER,
     is_read INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE TABLE IF NOT EXISTS export_processes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    seq_no INTEGER,
+    bl TEXT DEFAULT '',
+    cntr_number TEXT DEFAULT '',
+    data_vazio TEXT DEFAULT '',
+    destino TEXT DEFAULT '',
+    navio TEXT DEFAULT '',
+    navegador TEXT DEFAULT '',
+    cliente TEXT DEFAULT '',
+    booking_date TEXT DEFAULT '',
+    terminal TEXT DEFAULT '',
+    fatura TEXT DEFAULT '',
+    notes TEXT DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    created_by INTEGER REFERENCES users(id),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_by INTEGER REFERENCES users(id)
+  );
+  CREATE TABLE IF NOT EXISTS export_steps (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    process_id INTEGER NOT NULL REFERENCES export_processes(id) ON DELETE CASCADE,
+    step_name TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'selecionar',
+    operated_by INTEGER REFERENCES users(id),
+    operated_at TEXT,
+    note TEXT DEFAULT '',
+    UNIQUE(process_id, step_name)
+  );
+  CREATE TABLE IF NOT EXISTS export_files (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    process_id INTEGER NOT NULL REFERENCES export_processes(id) ON DELETE CASCADE,
+    step_name TEXT NOT NULL,
+    file_url TEXT NOT NULL,
+    file_name TEXT NOT NULL,
+    file_size INTEGER,
+    uploaded_by INTEGER REFERENCES users(id),
+    uploaded_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 `;
 
@@ -167,6 +211,45 @@ const PG_SCHEMA = `
     is_read INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT NOW()
   );
+  CREATE TABLE IF NOT EXISTS export_processes (
+    id SERIAL PRIMARY KEY,
+    seq_no INTEGER,
+    bl TEXT DEFAULT '',
+    cntr_number TEXT DEFAULT '',
+    data_vazio TEXT DEFAULT '',
+    destino TEXT DEFAULT '',
+    navio TEXT DEFAULT '',
+    navegador TEXT DEFAULT '',
+    cliente TEXT DEFAULT '',
+    booking_date TEXT DEFAULT '',
+    terminal TEXT DEFAULT '',
+    fatura TEXT DEFAULT '',
+    notes TEXT DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT NOW(),
+    created_by INTEGER REFERENCES users(id),
+    updated_at TEXT NOT NULL DEFAULT NOW(),
+    updated_by INTEGER REFERENCES users(id)
+  );
+  CREATE TABLE IF NOT EXISTS export_steps (
+    id SERIAL PRIMARY KEY,
+    process_id INTEGER NOT NULL REFERENCES export_processes(id) ON DELETE CASCADE,
+    step_name TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'selecionar',
+    operated_by INTEGER REFERENCES users(id),
+    operated_at TEXT,
+    note TEXT DEFAULT '',
+    UNIQUE(process_id, step_name)
+  );
+  CREATE TABLE IF NOT EXISTS export_files (
+    id SERIAL PRIMARY KEY,
+    process_id INTEGER NOT NULL REFERENCES export_processes(id) ON DELETE CASCADE,
+    step_name TEXT NOT NULL,
+    file_url TEXT NOT NULL,
+    file_name TEXT NOT NULL,
+    file_size INTEGER,
+    uploaded_by INTEGER REFERENCES users(id),
+    uploaded_at TEXT NOT NULL DEFAULT NOW()
+  );
 `;
 
 async function initDB() {
@@ -217,6 +300,22 @@ async function ensureSteps(processId) {
   }
 }
 
+async function ensureExportSteps(processId) {
+  for (const name of EXPORT_STEP_NAMES) {
+    if (driver.isPostgres) {
+      await driver.run(
+        'INSERT INTO export_steps (process_id, step_name, status) VALUES (?, ?, \'selecionar\') ON CONFLICT DO NOTHING',
+        [processId, name]
+      );
+    } else {
+      await driver.run(
+        'INSERT OR IGNORE INTO export_steps (process_id, step_name, status) VALUES (?, ?, \'selecionar\')',
+        [processId, name]
+      );
+    }
+  }
+}
+
 async function logOperation(userId, action, entityType, entityId, detail, oldValue, newValue) {
   await driver.run(
     'INSERT INTO operation_logs (user_id, action, entity_type, entity_id, detail, old_value, new_value) VALUES (?,?,?,?,?,?,?)',
@@ -224,4 +323,4 @@ async function logOperation(userId, action, entityType, entityId, detail, oldVal
   );
 }
 
-module.exports = { db: driver, initDB, STEP_NAMES, ensureSteps, logOperation };
+module.exports = { db: driver, initDB, STEP_NAMES, EXPORT_STEP_NAMES, ensureSteps, ensureExportSteps, logOperation };
