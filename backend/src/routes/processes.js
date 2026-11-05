@@ -53,7 +53,7 @@ router.get('/', auth, async (req, res) => {
     const result = [];
     for (const r of rows) {
       await ensureSteps(r.id);
-      const steps = await db.all(`SELECT ps.step_name, ps.status, ps.operated_at, ps.operated_by, u.account_code as operated_code FROM process_steps ps LEFT JOIN users u ON ps.operated_by = u.id WHERE ps.process_id = ?`, [r.id]);
+      const steps = await db.all(`SELECT ps.step_name, ps.status, ps.operated_at, ps.operated_by, u.display_name as operated_by_name FROM process_steps ps LEFT JOIN users u ON ps.operated_by = u.id WHERE ps.process_id = ?`, [r.id]);
       r.steps = steps;
       result.push(r);
     }

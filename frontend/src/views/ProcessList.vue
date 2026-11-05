@@ -308,7 +308,7 @@ function getStepTagStyle(row, stepName) {
 
 function getStepOperatedCode(row, stepName) {
   const step = row.steps?.find(s => s.step_name === stepName)
-  return step?.operated_code || ''
+  return step?.operated_by_name || ''
 }
 
 function getStepOperatedTime(row, stepName) {
@@ -336,7 +336,7 @@ async function updateStepInList(row, stepName, newStatus) {
   step.status = newStatus
   try {
     const res = await axios.put(`/api/processes/${row.id}/steps/${stepName}`, { status: newStatus, note: step.note || '' })
-    step.operated_code = res.data.operated_by_code || auth.user?.account_code
+    step.operated_by_name = res.data.operated_by_name || auth.user?.display_name
     step.operated_at = res.data.operated_at
     successFeedback()
   } catch (e) {

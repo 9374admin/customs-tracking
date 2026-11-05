@@ -6,7 +6,8 @@
       </div>
       <el-menu :default-active="$route.path" router background-color="#304156" text-color="#bfcbd9" active-text-color="#409eff">
         <el-menu-item index="/dashboard"><el-icon><DataAnalysis/></el-icon><span>Painel</span></el-menu-item>
-        <el-menu-item index="/processes"><el-icon><Document/></el-icon><span>Processos</span></el-menu-item>
+        <el-menu-item index="/processes"><el-icon><Document/></el-icon><span>Importa</span></el-menu-item>
+        <el-menu-item index="/exporta"><el-icon><Upload/></el-icon><span>Exporta</span></el-menu-item>
         <el-menu-item index="/chat"><el-icon><ChatDotRound/></el-icon><span>Chat</span></el-menu-item>
         <el-menu-item index="/logs" v-if="auth.isAdmin"><el-icon><List/></el-icon><span>Registos</span></el-menu-item>
         <el-menu-item index="/users" v-if="auth.isAdmin"><el-icon><User/></el-icon><span>Utilizadores</span></el-menu-item>
