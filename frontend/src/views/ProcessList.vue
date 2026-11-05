@@ -336,7 +336,7 @@ let syncing = false
 function queueSync(type, data) {
   syncQueue.push({ type, data, retries: 0 })
   if (syncTimer) clearTimeout(syncTimer)
-  syncTimer = setTimeout(flushSync, 2000)
+  syncTimer = setTimeout(flushSync, 10000)
 }
 
 async function flushSync() {
