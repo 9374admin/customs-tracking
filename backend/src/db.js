@@ -2,8 +2,8 @@ const bcrypt = require('bcryptjs');
 const driver = require('./db-driver');
 
 const STEP_NAMES = [
-  'licenca_aprovacao', 'du', 'talex', 'cnca', 'nota_cnca', 'recibo', 'transporte',
-  'legalizacao', 'delivery', 'inspecao', 'detencao',
+  'talex', 'transporte', 'licenca_aprovacao', 'cnca', 'legalizacao', 'delivery',
+  'du', 'nota_cnca', 'recibo', 'inspecao', 'detencao',
   'sobrestadia', 'porto', 'terminal', 'entregue'
 ];
 

@@ -52,8 +52,10 @@
         </el-table-column>
         <el-table-column prop="prevista_date" label="Prevista" width="100">
           <template #default="{ row }">
-            <el-date-picker v-model="row.prevista_date" type="date" value-format="YYYY-MM-DD" size="small" style="width: 90px; font-size: 12px;" @change="saveField(row, 'prevista_date')" v-if="auth.canEdit" />
-            <span v-else>{{ row.prevista_date }}</span>
+            <div :style="isPrevistaUrgent(row) ? 'background: #cc0000; color: #fff; font-weight: 700; padding: 2px 4px; border-radius: 3px; text-align: center;' : 'text-align: center;'">
+              <el-date-picker v-model="row.prevista_date" type="date" value-format="YYYY-MM-DD" format="DD/MM/YYYY" size="small" style="width: 90px; font-size: 12px;" @change="saveField(row, 'prevista_date')" v-if="auth.canEdit" />
+              <span v-else>{{ formatPrevista(row.prevista_date) }}</span>
+            </div>
           </template>
         </el-table-column>
         <el-table-column v-for="step in STEP_NAMES" :key="step" :label="STEP_LABELS[step]" width="85" align="center">
@@ -100,22 +102,6 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="Pagamento" width="120" align="center">
-          <template #default="{ row }">
-            <div style="display: flex; flex-direction: column; gap: 2px; align-items: center;">
-              <el-input v-model="row.fee_amount" size="small" placeholder="0.00" style="width: 80px; font-size: 11px;" @change="saveFeeAmount(row)" v-if="auth.canEdit" />
-              <span v-else style="font-size: 12px;">{{ row.fee_amount || '-' }}</span>
-              <el-select v-model="row.fee_status" size="small" style="width: 85px; font-size: 11px;" @change="saveFeeStatus(row)" v-if="auth.canEdit">
-                <el-option label="Por escolher" value="" />
-                <el-option label="Em cobrança" value="em_cobranca" />
-                <el-option label="Pago" value="pago" />
-              </el-select>
-              <el-tag v-else size="small" :type="row.fee_status === 'pago' ? 'success' : row.fee_status === 'em_cobranca' ? 'warning' : 'info'">
-                {{ { pago: 'Pago', em_cobranca: 'Em cobrança' }[row.fee_status] || 'Por escolher' }}
-              </el-tag>
-            </div>
-          </template>
-        </el-table-column>
         <el-table-column label="Fecho" width="120" align="center">
           <template #default="{ row }">
             <div style="display: flex; flex-direction: column; gap: 2px; align-items: center;">
@@ -130,6 +116,22 @@
                 <el-icon :size="13" style="cursor: pointer; color: #409eff;" @click="openFileDialog(row.id, 'fecho')"><Paperclip /></el-icon>
                 <span v-if="fileCount(row.id, 'fecho')" style="font-size: 10px; color: #006400; font-weight: 600; cursor: pointer;" @click="openFileDialog(row.id, 'fecho')">{{ fileCount(row.id, 'fecho') }}</span>
               </div>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="Pagamento" width="120" align="center">
+          <template #default="{ row }">
+            <div style="display: flex; flex-direction: column; gap: 2px; align-items: center;">
+              <el-input v-model="row.fee_amount" size="small" placeholder="0.00" style="width: 80px; font-size: 11px;" @change="saveFeeAmount(row)" v-if="auth.canEdit" />
+              <span v-else style="font-size: 12px;">{{ row.fee_amount || '-' }}</span>
+              <el-select v-model="row.fee_status" size="small" style="width: 85px; font-size: 11px;" @change="saveFeeStatus(row)" v-if="auth.canEdit">
+                <el-option label="Por escolher" value="" />
+                <el-option label="Em cobrança" value="em_cobranca" />
+                <el-option label="Pago" value="pago" />
+              </el-select>
+              <el-tag v-else size="small" :type="row.fee_status === 'pago' ? 'success' : row.fee_status === 'em_cobranca' ? 'warning' : 'info'">
+                {{ { pago: 'Pago', em_cobranca: 'Em cobrança' }[row.fee_status] || 'Por escolher' }}
+              </el-tag>
             </div>
           </template>
         </el-table-column>
@@ -372,6 +374,27 @@ function isBlUrgent(row) {
   }
   return false
 }
+
+function isPrevistaUrgent(row) {
+  if (!row.prevista_date) return false
+  const prevista = new Date(row.prevista_date)
+  const now = new Date()
+  const diffDays = (now - prevista) / (1000 * 60 * 60 * 24)
+  if (diffDays >= 4) {
+    const legalStep = row.steps?.find(s => s.step_name === 'legalizacao')
+    const legalDone = legalStep && (legalStep.status === 'concluido' || legalStep.status === 'pago')
+    return !legalDone
+  }
+  return false
+}
+
+function formatPrevista(dateStr) {
+  if (!dateStr) return ''
+  const parts = dateStr.split('-')
+  if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`
+  return dateStr
+}
+
 
 function isDetencaoActive(row) {
   const detStep = row.steps?.find(s => s.step_name === 'detencao')
