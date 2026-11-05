@@ -608,16 +608,12 @@ onMounted(() => {
   loadData()
   loadEmpresas()
   socketStore.on('process:created', loadData)
-  socketStore.on('process:updated', loadData)
-  socketStore.on('step:updated', loadData)
   socketStore.on('process:deleted', loadData)
 })
 
 onUnmounted(() => {
   clearInterval(clockTimer)
   socketStore.off('process:created')
-  socketStore.off('process:updated')
-  socketStore.off('step:updated')
   socketStore.off('process:deleted')
 })
 </script>

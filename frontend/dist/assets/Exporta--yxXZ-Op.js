@@ -1,1 +1,0 @@
-import{_ as t,o as n,k as r,w as a,r as s,d as c}from"./index-CDzx6yOd.js";const l={};function d(_,e){const o=s("el-card");return n(),r(o,null,{default:a(()=>[...e[0]||(e[0]=[c("div",{style:{"text-align":"center",padding:"60px",color:"#999","font-size":"16px"}}," Página em construção ",-1)])]),_:1})}const i=t(l,[["render",d]]);export{i as default};
