@@ -36,6 +36,13 @@
           </template>
         </el-table-column>
 
+        <el-table-column prop="booking_text" label="BOOKING" width="110">
+          <template #default="{ row }">
+            <el-input v-model="row.booking_text" size="small" style="font-size: 12px;" @change="saveField(row, 'booking_text')" v-if="auth.canEdit" />
+            <span v-else style="font-size: 12px;">{{ row.booking_text }}</span>
+          </template>
+        </el-table-column>
+
         <el-table-column v-for="col in STEP_COLS" :key="col.key" :label="col.label" :width="col.width || 90" align="center">
           <template #default="{ row }">
             <div style="display: flex; flex-direction: column; align-items: center;">
@@ -257,6 +264,7 @@
     <el-dialog v-model="showCreate" title="Novo Processo de Exportação" width="500px">
       <el-form label-width="140px">
         <el-form-item label="BL"><el-input v-model="createForm.bl" /></el-form-item>
+        <el-form-item label="BOOKING"><el-input v-model="createForm.booking_text" /></el-form-item>
         <el-form-item label="Nº de CNTR"><el-input v-model="createForm.cntr_number" /></el-form-item>
         <el-form-item label="Data Vazio"><el-date-picker v-model="createForm.data_vazio" type="date" value-format="YYYY-MM-DD" format="DD/MM/YYYY" style="width: 100%;" /></el-form-item>
         <el-form-item label="Partida"><el-date-picker v-model="createForm.partida_date" type="date" value-format="YYYY-MM-DD" format="DD/MM/YYYY" style="width: 100%;" /></el-form-item>
@@ -335,7 +343,7 @@ const currentTime = ref('')
 let clockTimer = null
 
 const STEP_COLS = [
-  { key: 'booking', label: 'BOOKING' },
+
   { key: 'ctt', label: 'CTT' },
 ]
 const STEP_COLS2 = [
@@ -360,7 +368,7 @@ const fileList = ref([])
 const fileLoading = ref(false)
 const fileCounts = ref({})
 
-const createForm = ref({ bl: '', cntr_number: '', data_vazio: '', destino: '', navio: '', navegador: '', cliente: '', booking_date: '', terminal: '', fatura: '', partida_date: '', chegado_date: '' })
+const createForm = ref({ bl: '', booking_text: '', cntr_number: '', data_vazio: '', destino: '', navio: '', navegador: '', cliente: '', booking_date: '', terminal: '', fatura: '', partida_date: '', chegado_date: '' })
 
 let debounceTimer = null
 function debouncedSearch() {
@@ -503,7 +511,7 @@ async function createProcess() {
     ElMessage.success('Processo criado')
     successFeedback()
     showCreate.value = false
-    createForm.value = { bl: '', cntr_number: '', data_vazio: '', destino: '', navio: '', navegador: '', cliente: '', booking_date: '', terminal: '', fatura: '', partida_date: '', chegado_date: '' }
+    createForm.value = { bl: '', booking_text: '', cntr_number: '', data_vazio: '', destino: '', navio: '', navegador: '', cliente: '', booking_date: '', terminal: '', fatura: '', partida_date: '', chegado_date: '' }
     await loadData()
     const idx = data.value.findIndex(r => r.id === res.data.id)
     if (idx >= 0) data.value[idx] = res.data

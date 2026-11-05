@@ -8,7 +8,7 @@ const STEP_NAMES = [
 ];
 
 const EXPORT_STEP_NAMES = [
-  'booking', 'ctt', 'draft', 'vgm', 'draft_final',
+  'ctt', 'draft', 'vgm', 'draft_final',
   'estado_ctt', 'estado_selo', 'entrada_terminal', 'frete', 'fecho'
 ];
 
@@ -95,6 +95,7 @@ const SQLITE_SCHEMA = `
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     seq_no INTEGER,
     bl TEXT DEFAULT '',
+    booking_text TEXT DEFAULT '',
     cntr_number TEXT DEFAULT '',
     data_vazio TEXT DEFAULT '',
     destino TEXT DEFAULT '',
@@ -217,6 +218,7 @@ const PG_SCHEMA = `
     id SERIAL PRIMARY KEY,
     seq_no INTEGER,
     bl TEXT DEFAULT '',
+    booking_text TEXT DEFAULT '',
     cntr_number TEXT DEFAULT '',
     data_vazio TEXT DEFAULT '',
     destino TEXT DEFAULT '',
@@ -294,6 +296,9 @@ async function initDB() {
   }
   if (!exportColNames.includes('chegado_date')) {
     await driver.exec('ALTER TABLE export_processes ADD COLUMN chegado_date TEXT DEFAULT \'\'');
+  }
+  if (!exportColNames.includes('booking_text')) {
+    await driver.exec('ALTER TABLE export_processes ADD COLUMN booking_text TEXT DEFAULT \'\'');
   }
 }
 
