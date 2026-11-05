@@ -58,11 +58,11 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column v-for="step in STEP_NAMES" :key="step" :label="STEP_LABELS[step]" width="85" align="center">
+        <el-table-column v-for="step in STEP_NAMES" :key="step" :label="STEP_LABELS[step]" :width="step === 'du' ? 140 : 85" align="center">
           <template #default="{ row }">
-            <div style="display: flex; flex-direction: column; align-items: center;">
-              <el-input v-if="step === 'du' && auth.canEdit" v-model="row.du_number" size="small" placeholder="R..." style="width: 80px; font-size: 12px; margin-bottom: 2px;" @change="saveDuNumber(row)" />
-              <span v-else-if="step === 'du' && row.du_number" style="font-size: 12px; color: #409eff; font-weight: 600; margin-bottom: 2px;">{{ row.du_number }}</span>
+            <div :style="step === 'du' ? 'display: flex; flex-direction: row; align-items: center; gap: 4px; justify-content: center;' : 'display: flex; flex-direction: column; align-items: center;'">
+              <el-input v-if="step === 'du' && auth.canEdit" v-model="row.du_number" size="small" placeholder="R..." style="width: 60px; font-size: 12px;" @change="saveDuNumber(row)" />
+              <span v-else-if="step === 'du' && row.du_number" style="font-size: 12px; color: #409eff; font-weight: 600;">{{ row.du_number }}</span>
               <el-dropdown trigger="click" @command="(cmd) => updateStepInList(row, step, cmd)" v-if="auth.canEdit">
                 <el-tag :type="getStepTagType(row, step)" :style="getStepTagStyle(row, step)" style="cursor: pointer; min-width: 64px; text-align: center; display: inline-block; font-size: 12px; padding: 3px 6px;">
                   {{ getStepStatusShort(row, step) }}
