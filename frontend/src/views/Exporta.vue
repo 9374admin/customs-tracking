@@ -31,7 +31,7 @@
 
         <el-table-column prop="bl" label="BL" width="120" fixed="left">
           <template #default="{ row }">
-            <el-input v-model="row.bl" size="small" style="font-size: 14px; width: 100%;" @change="onFieldChange(row, 'bl')" v-if="auth.canEdit" placeholder="+" />
+            <el-input v-model="row.bl" size="small" style="font-size: 14px; width: 100%;" @change="saveField(row, 'bl')" v-if="auth.canEdit" />
             <span v-else style="font-size: 14px;">{{ row.bl }}</span>
           </template>
         </el-table-column>
@@ -68,56 +68,56 @@
 
         <el-table-column prop="cntr_number" label="Nº de Cntr" width="110">
           <template #default="{ row }">
-            <el-input v-model="row.cntr_number" size="small" style="font-size: 12px;" @change="onFieldChange(row, 'cntr_number')" v-if="auth.canEdit" placeholder="+" />
+            <el-input v-model="row.cntr_number" size="small" style="font-size: 12px;" @change="saveField(row, 'cntr_number')" v-if="auth.canEdit" />
             <span v-else style="font-size: 12px;">{{ row.cntr_number }}</span>
           </template>
         </el-table-column>
 
         <el-table-column prop="data_vazio" label="Data Vazio" width="110">
           <template #default="{ row }">
-            <el-date-picker v-model="row.data_vazio" type="date" value-format="YYYY-MM-DD" format="DD/MM/YYYY" size="small" style="width: 90px; font-size: 12px;" @change="onFieldChange(row, 'data_vazio')" v-if="auth.canEdit" />
+            <el-date-picker v-model="row.data_vazio" type="date" value-format="YYYY-MM-DD" format="DD/MM/YYYY" size="small" style="width: 90px; font-size: 12px;" @change="saveField(row, 'data_vazio')" v-if="auth.canEdit" />
             <span v-else style="font-size: 12px;">{{ formatDate(row.data_vazio) }}</span>
           </template>
         </el-table-column>
 
         <el-table-column prop="destino" label="Destino" width="90">
           <template #default="{ row }">
-            <el-input v-model="row.destino" size="small" style="font-size: 12px;" @change="onFieldChange(row, 'destino')" v-if="auth.canEdit" placeholder="+" />
+            <el-input v-model="row.destino" size="small" style="font-size: 12px;" @change="saveField(row, 'destino')" v-if="auth.canEdit" />
             <span v-else style="font-size: 12px;">{{ row.destino }}</span>
           </template>
         </el-table-column>
 
         <el-table-column prop="navio" label="Navio" width="90">
           <template #default="{ row }">
-            <el-input v-model="row.navio" size="small" style="font-size: 12px;" @change="onFieldChange(row, 'navio')" v-if="auth.canEdit" placeholder="+" />
+            <el-input v-model="row.navio" size="small" style="font-size: 12px;" @change="saveField(row, 'navio')" v-if="auth.canEdit" />
             <span v-else style="font-size: 12px;">{{ row.navio }}</span>
           </template>
         </el-table-column>
 
         <el-table-column prop="navegador" label="Navegador" width="90">
           <template #default="{ row }">
-            <el-input v-model="row.navegador" size="small" style="font-size: 12px;" @change="onFieldChange(row, 'navegador')" v-if="auth.canEdit" placeholder="+" />
+            <el-input v-model="row.navegador" size="small" style="font-size: 12px;" @change="saveField(row, 'navegador')" v-if="auth.canEdit" />
             <span v-else style="font-size: 12px;">{{ row.navegador }}</span>
           </template>
         </el-table-column>
 
         <el-table-column prop="cliente" label="Cliente" width="90">
           <template #default="{ row }">
-            <el-input v-model="row.cliente" size="small" style="font-size: 12px;" @change="onFieldChange(row, 'cliente')" v-if="auth.canEdit" placeholder="+" />
+            <el-input v-model="row.cliente" size="small" style="font-size: 12px;" @change="saveField(row, 'cliente')" v-if="auth.canEdit" />
             <span v-else style="font-size: 12px;">{{ row.cliente }}</span>
           </template>
         </el-table-column>
 
         <el-table-column prop="booking_date" label="BOOKING DATE" width="120">
           <template #default="{ row }">
-            <el-date-picker v-model="row.booking_date" type="date" value-format="YYYY-MM-DD" format="DD/MM/YYYY" size="small" style="width: 90px; font-size: 12px;" @change="onFieldChange(row, 'booking_date')" v-if="auth.canEdit" />
+            <el-date-picker v-model="row.booking_date" type="date" value-format="YYYY-MM-DD" format="DD/MM/YYYY" size="small" style="width: 90px; font-size: 12px;" @change="saveField(row, 'booking_date')" v-if="auth.canEdit" />
             <span v-else style="font-size: 12px;">{{ formatDate(row.booking_date) }}</span>
           </template>
         </el-table-column>
 
         <el-table-column prop="terminal" label="Terminal" width="90">
           <template #default="{ row }">
-            <el-input v-model="row.terminal" size="small" style="font-size: 12px;" @change="onFieldChange(row, 'terminal')" v-if="auth.canEdit" placeholder="+" />
+            <el-input v-model="row.terminal" size="small" style="font-size: 12px;" @change="saveField(row, 'terminal')" v-if="auth.canEdit" />
             <span v-else style="font-size: 12px;">{{ row.terminal }}</span>
           </template>
         </el-table-column>
@@ -397,35 +397,11 @@ function saveField(row, field) {
   queueSync('field', { processId: row.id, field, value: row[field] || '' })
 }
 
-function getEmptyRow() {
-  return { id: 0, seq_no: '*', bl: '', cntr_number: '', data_vazio: '', destino: '', navio: '', navegador: '', cliente: '', booking_date: '', terminal: '', fatura: '', notes: '', steps: [], isNew: true }
-}
-
-async function onFieldChange(row, field) {
-  if (row.isNew) {
-    const val = row[field]
-    if (!val || val === '') return
-    try {
-      const res = await axios.post('/api/exporta', { [field]: val })
-      Object.assign(row, res.data)
-      row.isNew = false
-      data.value.push(getEmptyRow())
-      successFeedback()
-      ElMessage.success('Processo criado')
-    } catch (e) {
-      ElMessage.error('Erro ao criar processo')
-    }
-  } else {
-    saveField(row, field)
-  }
-}
-
 async function loadData() {
   loading.value = true
   try {
     const res = await axios.get('/api/exporta', { params: { search: search.value, page: page.value, limit: limit.value } })
     data.value = res.data.data
-    if (auth.canEdit && page.value === 1) data.value.push(getEmptyRow())
     total.value = res.data.total
   } catch (e) {
     ElMessage.error('Erro ao carregar dados')
@@ -437,12 +413,14 @@ async function loadData() {
 async function createProcess() {
   creating.value = true
   try {
-    await axios.post('/api/exporta', createForm.value)
+    const res = await axios.post('/api/exporta', createForm.value)
     ElMessage.success('Processo criado')
     successFeedback()
     showCreate.value = false
     createForm.value = { bl: '', cntr_number: '', data_vazio: '', destino: '', navio: '', navegador: '', cliente: '', booking_date: '', terminal: '', fatura: '' }
-    loadData()
+    await loadData()
+    const idx = data.value.findIndex(r => r.id === res.data.id)
+    if (idx >= 0) data.value[idx] = res.data
   } catch (e) {
     ElMessage.error('Erro ao criar processo')
   } finally {
