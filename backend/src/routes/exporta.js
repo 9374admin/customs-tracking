@@ -67,7 +67,7 @@ router.post('/', auth, async (req, res) => {
     const maxSeq = await db.get('SELECT MAX(seq_no) as m FROM export_processes');
     const seqNo = (maxSeq && maxSeq.m != null) ? maxSeq.m + 1 : 1;
     const result = await db.run(
-      `INSERT INTO export_processes (seq_no, bl, cntr_number, data_vazio, destino, navio, navegador, cliente, booking_date, terminal, fatura, created_by, updated_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      `INSERT INTO export_processes (seq_no, bl, cntr_number, data_vazio, destino, navio, navegador, cliente, booking_date, terminal, fatura, created_by, updated_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       [seqNo, bl||'', cntr_number||'', data_vazio||'', destino||'', navio||'', navegador||'', cliente||'', booking_date||'', terminal||'', fatura||'', req.user.id, req.user.id]
     );
     const newId = result.lastInsertRowid;
