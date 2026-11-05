@@ -80,6 +80,36 @@
           </template>
         </el-table-column>
 
+        <el-table-column v-for="col in STEP_COLS2" :key="col.key" :label="col.label" :width="col.width || 90" align="center">
+          <template #default="{ row }">
+            <div style="display: flex; flex-direction: column; align-items: center;">
+              <el-dropdown trigger="click" @command="(cmd) => updateStep(row, col.key, cmd)" v-if="auth.canEdit">
+                <el-tag :type="getTagType(row, col.key)" :style="getTagStyle(row, col.key)" style="cursor: pointer; min-width: 64px; text-align: center; display: inline-block; font-size: 12px; padding: 3px 6px;">
+                  {{ getStepShort(row, col.key) }}
+                </el-tag>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="selecionar">Por escolher</el-dropdown-item>
+                    <el-dropdown-item command="em_curso">Processando</el-dropdown-item>
+                    <el-dropdown-item command="concluido">Concluído</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+              <el-tag v-else :type="getTagType(row, col.key)" :style="getTagStyle(row, col.key)" style="min-width: 64px; text-align: center; display: inline-block; font-size: 12px; padding: 3px 6px;">
+                {{ getStepShort(row, col.key) }}
+              </el-tag>
+              <div v-if="getOperatedCode(row, col.key)" style="font-size: 9px; margin-top: 2px; line-height: 1.2; white-space: nowrap;">
+                <span style="color: #409eff; font-weight: 600;">{{ getOperatedCode(row, col.key) }}</span>
+                <span style="color: #c0c4cc;"> {{ getOperatedTime(row, col.key) }}</span>
+              </div>
+              <div style="margin-top: 2px; display: flex; gap: 4px; align-items: center;">
+                <el-icon :size="13" style="cursor: pointer; color: #409eff;" @click="openFileDialog(row.id, col.key)"><Paperclip /></el-icon>
+                <span v-if="fileCount(row.id, col.key)" style="font-size: 10px; color: #006400; font-weight: 600; cursor: pointer;" @click="openFileDialog(row.id, col.key)">{{ fileCount(row.id, col.key) }}</span>
+              </div>
+            </div>
+          </template>
+        </el-table-column>
+
         <el-table-column prop="partida_date" label="Partida" width="110">
           <template #default="{ row }">
             <el-date-picker v-model="row.partida_date" type="date" value-format="YYYY-MM-DD" format="DD/MM/YYYY" size="small" :style="isPartidaUrgent(row) ? 'width: 90px; font-size: 12px; --el-fill-color: #fee; border: 2px solid #cc0000;' : 'width: 90px; font-size: 12px;'" @change="saveField(row, 'partida_date')" v-if="auth.canEdit" />
@@ -112,6 +142,36 @@
           <template #default="{ row }">
             <el-input v-model="row.navegador" size="small" style="font-size: 12px;" @change="saveField(row, 'navegador')" v-if="auth.canEdit" />
             <span v-else style="font-size: 12px;">{{ row.navegador }}</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column v-for="col in STEP_COLS3" :key="col.key" :label="col.label" :width="col.width || 90" align="center">
+          <template #default="{ row }">
+            <div style="display: flex; flex-direction: column; align-items: center;">
+              <el-dropdown trigger="click" @command="(cmd) => updateStep(row, col.key, cmd)" v-if="auth.canEdit">
+                <el-tag :type="getTagType(row, col.key)" :style="getTagStyle(row, col.key)" style="cursor: pointer; min-width: 64px; text-align: center; display: inline-block; font-size: 12px; padding: 3px 6px;">
+                  {{ getStepShort(row, col.key) }}
+                </el-tag>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="selecionar">Por escolher</el-dropdown-item>
+                    <el-dropdown-item command="em_curso">Processando</el-dropdown-item>
+                    <el-dropdown-item command="concluido">Concluído</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+              <el-tag v-else :type="getTagType(row, col.key)" :style="getTagStyle(row, col.key)" style="min-width: 64px; text-align: center; display: inline-block; font-size: 12px; padding: 3px 6px;">
+                {{ getStepShort(row, col.key) }}
+              </el-tag>
+              <div v-if="getOperatedCode(row, col.key)" style="font-size: 9px; margin-top: 2px; line-height: 1.2; white-space: nowrap;">
+                <span style="color: #409eff; font-weight: 600;">{{ getOperatedCode(row, col.key) }}</span>
+                <span style="color: #c0c4cc;"> {{ getOperatedTime(row, col.key) }}</span>
+              </div>
+              <div style="margin-top: 2px; display: flex; gap: 4px; align-items: center;">
+                <el-icon :size="13" style="cursor: pointer; color: #409eff;" @click="openFileDialog(row.id, col.key)"><Paperclip /></el-icon>
+                <span v-if="fileCount(row.id, col.key)" style="font-size: 10px; color: #006400; font-weight: 600; cursor: pointer;" @click="openFileDialog(row.id, col.key)">{{ fileCount(row.id, col.key) }}</span>
+              </div>
+            </div>
           </template>
         </el-table-column>
 
@@ -158,7 +218,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column v-for="col in STEP_COLS2" :key="col.key" :label="col.label" :width="col.width || 90" align="center">
+        <el-table-column v-for="col in STEP_COLS4" :key="col.key" :label="col.label" :width="col.width || 90" align="center">
           <template #default="{ row }">
             <div style="display: flex; flex-direction: column; align-items: center;">
               <el-dropdown trigger="click" @command="(cmd) => updateStep(row, col.key, cmd)" v-if="auth.canEdit">
@@ -282,10 +342,13 @@ const STEP_COLS2 = [
   { key: 'draft', label: 'Draft' },
   { key: 'vgm', label: 'VGM' },
   { key: 'draft_final', label: 'Draft Final' },
-
+]
+const STEP_COLS3 = [
   { key: 'estado_ctt', label: 'Estado CTT' },
   { key: 'estado_selo', label: 'Estado Selo' },
   { key: 'entrada_terminal', label: 'Entrada Terminal' },
+]
+const STEP_COLS4 = [
   { key: 'frete', label: 'FRETE' },
   { key: 'fecho', label: 'FECHO' },
 ]
