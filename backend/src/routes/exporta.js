@@ -70,9 +70,10 @@ router.post('/', auth, async (req, res) => {
       `INSERT INTO export_processes (seq_no, bl, cntr_number, data_vazio, destino, navio, navegador, cliente, booking_date, terminal, fatura, created_by, updated_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       [seqNo, bl||'', cntr_number||'', data_vazio||'', destino||'', navio||'', navegador||'', cliente||'', booking_date||'', terminal||'', fatura||'', req.user.id, req.user.id]
     );
-    await ensureExportSteps(result.id);
-    await logOperation(req.user.id, 'create', 'export_process', result.id, `Created export process ${seqNo}`);
-    const proc = await getExportWithSteps(result.id);
+    const newId = result.lastInsertRowid;
+    await ensureExportSteps(newId);
+    await logOperation(req.user.id, 'create', 'export_process', newId, `Created export process ${seqNo}`);
+    const proc = await getExportWithSteps(newId);
     const io = req.app.get('io');
     if (io) io.emit('export:created', proc);
     res.json(proc);
@@ -174,7 +175,7 @@ router.post('/:id/files/:step', auth, upload.single('file'), async (req, res) =>
       [id, step, fileUrl, req.file.originalname, req.file.size, req.user.id]
     );
     await logOperation(req.user.id, 'file_upload', 'export_process', id, `${step}: ${req.file.originalname}`);
-    res.json({ id: result.id, file_url: fileUrl, file_name: req.file.originalname, file_size: req.file.size });
+    res.json({ id: result.lastInsertRowid, file_url: fileUrl, file_name: req.file.originalname, file_size: req.file.size });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
