@@ -14,7 +14,7 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
         <el-input v-model="search" placeholder="Buscar por BL, CNTR, destino..." clearable style="width: 300px;" prefix-icon="Search" @input="debouncedSearch" />
         <div style="display: flex; gap: 12px; align-items: center;">
-          <el-button type="primary" @click="showCreate = true" v-if="auth.canEdit"><el-icon><Plus/></el-icon> Novo</el-button>
+          <el-button type="primary" @click="showCreate = true" v-if="auth.canEdit"><el-icon><Plus/></el-icon> Novo Processo</el-button>
           <el-button type="danger" @click="batchDelete" v-if="auth.isAdmin" :disabled="selectedRows.length === 0"><el-icon><Delete/></el-icon> Eliminar ({{ selectedRows.length }})</el-button>
         </div>
       </div>
