@@ -334,11 +334,13 @@ async function updateStepInList(row, stepName, newStatus) {
   if (!step || step.status === newStatus) return
   const oldStatus = step.status
   step.status = newStatus
+  step.operated_by_name = auth.user?.display_name || ''
+  step.operated_at = new Date().toISOString().replace('T', ' ').substring(0, 19)
+  successFeedback()
   try {
     const res = await axios.put(`/api/processes/${row.id}/steps/${stepName}`, { status: newStatus, note: step.note || '' })
     step.operated_by_name = res.data.operated_by_name || auth.user?.display_name
     step.operated_at = res.data.operated_at
-    successFeedback()
   } catch (e) {
     step.status = oldStatus
     ElMessage.error('Erro ao atualizar etapa')
@@ -346,18 +348,18 @@ async function updateStepInList(row, stepName, newStatus) {
 }
 
 async function saveField(row, field) {
+  feedback()
   try {
     await axios.put(`/api/processes/${row.id}`, { [field]: row[field] || '' })
-    feedback()
   } catch (e) {
     ElMessage.error('Erro ao salvar')
   }
 }
 
 async function saveDuNumber(row) {
+  feedback()
   try {
     await axios.put(`/api/processes/${row.id}`, { du_number: row.du_number || '' })
-    feedback()
   } catch (e) {
     ElMessage.error('Erro ao salvar Nº DU')
   }
@@ -411,18 +413,18 @@ function rowClassName({ row }) {
 }
 
 async function saveFeeAmount(row) {
+  feedback()
   try {
     await axios.put(`/api/processes/${row.id}`, { fee_amount: row.fee_amount || '' })
-    feedback()
   } catch (e) {
     ElMessage.error('Erro ao salvar valor')
   }
 }
 
 async function saveFeeStatus(row) {
+  feedback()
   try {
     await axios.put(`/api/processes/${row.id}`, { fee_status: row.fee_status || '' })
-    feedback()
   } catch (e) {
     ElMessage.error('Erro ao salvar estado')
   }
