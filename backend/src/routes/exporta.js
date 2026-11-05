@@ -37,7 +37,7 @@ router.get('/', auth, async (req, res) => {
       params.push(s, s, s, s, s, s);
     }
     const countRow = await db.get(`SELECT COUNT(*) as c FROM export_processes e WHERE ${where}`, params);
-    let sql = `SELECT e.id, e.seq_no, e.bl, e.cntr_number, e.data_vazio, e.destino, e.navio, e.navegador, e.cliente, e.booking_date, e.terminal, e.fatura, e.notes, e.created_at, e.updated_at FROM export_processes e WHERE ${where} ORDER BY e.seq_no ASC`;
+    let sql = `SELECT e.id, e.seq_no, e.bl, e.cntr_number, e.data_vazio, e.destino, e.navio, e.navegador, e.cliente, e.booking_date, e.terminal, e.fatura, e.partida_date, e.chegado_date, e.notes, e.created_at, e.updated_at FROM export_processes e WHERE ${where} ORDER BY e.seq_no ASC`;
     const offset = (parseInt(page) - 1) * parseInt(limit);
     sql += ` LIMIT ? OFFSET ?`;
     params.push(parseInt(limit), offset);
@@ -63,12 +63,12 @@ router.get('/:id', auth, async (req, res) => {
 
 router.post('/', auth, async (req, res) => {
   try {
-    const { bl, cntr_number, data_vazio, destino, navio, navegador, cliente, booking_date, terminal, fatura } = req.body;
+    const { bl, cntr_number, data_vazio, destino, navio, navegador, cliente, booking_date, terminal, fatura, partida_date, chegado_date } = req.body;
     const maxSeq = await db.get('SELECT MAX(seq_no) as m FROM export_processes');
     const seqNo = (maxSeq && maxSeq.m != null) ? maxSeq.m + 1 : 1;
     const result = await db.run(
-      `INSERT INTO export_processes (seq_no, bl, cntr_number, data_vazio, destino, navio, navegador, cliente, booking_date, terminal, fatura, created_by, updated_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-      [seqNo, bl||'', cntr_number||'', data_vazio||'', destino||'', navio||'', navegador||'', cliente||'', booking_date||'', terminal||'', fatura||'', req.user.id, req.user.id]
+      `INSERT INTO export_processes (seq_no, bl, cntr_number, data_vazio, destino, navio, navegador, cliente, booking_date, terminal, fatura, partida_date, chegado_date, created_by, updated_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      [seqNo, bl||'', cntr_number||'', data_vazio||'', destino||'', navio||'', navegador||'', cliente||'', booking_date||'', terminal||'', fatura||'', partida_date||'', chegado_date||'', req.user.id, req.user.id]
     );
     const newId = result.lastInsertRowid;
     await ensureExportSteps(newId);
@@ -85,7 +85,7 @@ router.post('/', auth, async (req, res) => {
 router.put('/:id', auth, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const fields = ['bl', 'cntr_number', 'data_vazio', 'destino', 'navio', 'navegador', 'cliente', 'booking_date', 'terminal', 'fatura', 'notes'];
+    const fields = ['bl', 'cntr_number', 'data_vazio', 'destino', 'navio', 'navegador', 'cliente', 'booking_date', 'terminal', 'fatura', 'partida_date', 'chegado_date', 'notes'];
     const updates = {};
     for (const f of fields) {
       if (req.body.hasOwnProperty(f)) updates[f] = req.body[f];

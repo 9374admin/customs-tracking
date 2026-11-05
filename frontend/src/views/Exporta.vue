@@ -80,6 +80,20 @@
           </template>
         </el-table-column>
 
+        <el-table-column prop="partida_date" label="Partida" width="110">
+          <template #default="{ row }">
+            <el-date-picker v-model="row.partida_date" type="date" value-format="YYYY-MM-DD" format="DD/MM/YYYY" size="small" :style="isPartidaUrgent(row) ? 'width: 90px; font-size: 12px; --el-fill-color: #fee; border: 2px solid #cc0000;' : 'width: 90px; font-size: 12px;'" @change="saveField(row, 'partida_date')" v-if="auth.canEdit" />
+            <span v-else :style="isPartidaUrgent(row) ? 'font-size: 12px; color: #cc0000; font-weight: 700;' : 'font-size: 12px;'">{{ formatDate(row.partida_date) }}</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="chegado_date" label="Chegado" width="110">
+          <template #default="{ row }">
+            <el-date-picker v-model="row.chegado_date" type="date" value-format="YYYY-MM-DD" format="DD/MM/YYYY" size="small" style="width: 90px; font-size: 12px;" @change="saveField(row, 'chegado_date')" v-if="auth.canEdit" />
+            <span v-else style="font-size: 12px;">{{ formatDate(row.chegado_date) }}</span>
+          </template>
+        </el-table-column>
+
         <el-table-column prop="destino" label="Destino" width="90">
           <template #default="{ row }">
             <el-input v-model="row.destino" size="small" style="font-size: 12px;" @change="saveField(row, 'destino')" v-if="auth.canEdit" />
@@ -185,6 +199,8 @@
         <el-form-item label="BL"><el-input v-model="createForm.bl" /></el-form-item>
         <el-form-item label="Nº de CNTR"><el-input v-model="createForm.cntr_number" /></el-form-item>
         <el-form-item label="Data Vazio"><el-date-picker v-model="createForm.data_vazio" type="date" value-format="YYYY-MM-DD" format="DD/MM/YYYY" style="width: 100%;" /></el-form-item>
+        <el-form-item label="Partida"><el-date-picker v-model="createForm.partida_date" type="date" value-format="YYYY-MM-DD" format="DD/MM/YYYY" style="width: 100%;" /></el-form-item>
+        <el-form-item label="Chegado"><el-date-picker v-model="createForm.chegado_date" type="date" value-format="YYYY-MM-DD" format="DD/MM/YYYY" style="width: 100%;" /></el-form-item>
         <el-form-item label="Destino"><el-input v-model="createForm.destino" /></el-form-item>
         <el-form-item label="Navio"><el-input v-model="createForm.navio" /></el-form-item>
         <el-form-item label="Navegador"><el-input v-model="createForm.navegador" /></el-form-item>
@@ -266,8 +282,7 @@ const STEP_COLS2 = [
   { key: 'draft', label: 'Draft' },
   { key: 'vgm', label: 'VGM' },
   { key: 'draft_final', label: 'Draft Final' },
-  { key: 'partida', label: 'Partida' },
-  { key: 'chegado', label: 'Chegado' },
+
   { key: 'estado_ctt', label: 'Estado CTT' },
   { key: 'estado_selo', label: 'Estado Selo' },
   { key: 'entrada_terminal', label: 'Entrada Terminal' },
@@ -282,7 +297,7 @@ const fileList = ref([])
 const fileLoading = ref(false)
 const fileCounts = ref({})
 
-const createForm = ref({ bl: '', cntr_number: '', data_vazio: '', destino: '', navio: '', navegador: '', cliente: '', booking_date: '', terminal: '', fatura: '' })
+const createForm = ref({ bl: '', cntr_number: '', data_vazio: '', destino: '', navio: '', navegador: '', cliente: '', booking_date: '', terminal: '', fatura: '', partida_date: '', chegado_date: '' })
 
 let debounceTimer = null
 function debouncedSearch() {
@@ -345,6 +360,14 @@ function formatDate(dateStr) {
   const parts = dateStr.split('-')
   if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`
   return dateStr
+}
+
+function isPartidaUrgent(row) {
+  if (!row.partida_date) return false
+  const partida = new Date(row.partida_date)
+  const now = new Date()
+  const diffDays = (partida - now) / (1000 * 60 * 60 * 24)
+  return diffDays < 5
 }
 
 const syncQueue = []
@@ -417,7 +440,7 @@ async function createProcess() {
     ElMessage.success('Processo criado')
     successFeedback()
     showCreate.value = false
-    createForm.value = { bl: '', cntr_number: '', data_vazio: '', destino: '', navio: '', navegador: '', cliente: '', booking_date: '', terminal: '', fatura: '' }
+    createForm.value = { bl: '', cntr_number: '', data_vazio: '', destino: '', navio: '', navegador: '', cliente: '', booking_date: '', terminal: '', fatura: '', partida_date: '', chegado_date: '' }
     await loadData()
     const idx = data.value.findIndex(r => r.id === res.data.id)
     if (idx >= 0) data.value[idx] = res.data

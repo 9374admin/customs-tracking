@@ -8,7 +8,7 @@ const STEP_NAMES = [
 ];
 
 const EXPORT_STEP_NAMES = [
-  'booking', 'ctt', 'draft', 'vgm', 'draft_final', 'partida', 'chegado',
+  'booking', 'ctt', 'draft', 'vgm', 'draft_final',
   'estado_ctt', 'estado_selo', 'entrada_terminal', 'frete', 'fecho'
 ];
 
@@ -104,6 +104,8 @@ const SQLITE_SCHEMA = `
     booking_date TEXT DEFAULT '',
     terminal TEXT DEFAULT '',
     fatura TEXT DEFAULT '',
+    partida_date TEXT DEFAULT '',
+    chegado_date TEXT DEFAULT '',
     notes TEXT DEFAULT '',
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     created_by INTEGER REFERENCES users(id),
@@ -224,6 +226,8 @@ const PG_SCHEMA = `
     booking_date TEXT DEFAULT '',
     terminal TEXT DEFAULT '',
     fatura TEXT DEFAULT '',
+    partida_date TEXT DEFAULT '',
+    chegado_date TEXT DEFAULT '',
     notes TEXT DEFAULT '',
     created_at TEXT NOT NULL DEFAULT NOW(),
     created_by INTEGER REFERENCES users(id),
@@ -281,6 +285,15 @@ async function initDB() {
   }
   if (!colNames.includes('fecho')) {
     await driver.exec('ALTER TABLE processes ADD COLUMN fecho TEXT DEFAULT \'\'');
+  }
+
+  const exportCols = await driver.tableInfo('export_processes');
+  const exportColNames = exportCols.map(c => c.name);
+  if (!exportColNames.includes('partida_date')) {
+    await driver.exec('ALTER TABLE export_processes ADD COLUMN partida_date TEXT DEFAULT \'\'');
+  }
+  if (!exportColNames.includes('chegado_date')) {
+    await driver.exec('ALTER TABLE export_processes ADD COLUMN chegado_date TEXT DEFAULT \'\'');
   }
 }
 
