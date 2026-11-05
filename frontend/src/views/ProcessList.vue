@@ -329,40 +329,55 @@ function goToDetail(row) {
   router.push(`/processes/${row.id}`)
 }
 
-async function updateStepInList(row, stepName, newStatus) {
+const syncQueue = []
+let syncTimer = null
+let syncing = false
+
+function queueSync(type, data) {
+  syncQueue.push({ type, data, retries: 0 })
+  if (syncTimer) clearTimeout(syncTimer)
+  syncTimer = setTimeout(flushSync, 2000)
+}
+
+async function flushSync() {
+  if (syncing || syncQueue.length === 0) return
+  syncing = true
+  while (syncQueue.length > 0) {
+    const item = syncQueue.shift()
+    try {
+      if (item.type === 'step') {
+        await axios.put(`/api/processes/${item.data.processId}/steps/${item.data.stepName}`, { status: item.data.status, note: item.data.note || '' })
+      } else if (item.type === 'field') {
+        await axios.put(`/api/processes/${item.data.processId}`, { [item.data.field]: item.data.value })
+      }
+    } catch (e) {
+      if (item.retries < 3) {
+        item.retries++
+        syncQueue.push(item)
+      }
+    }
+  }
+  syncing = false
+}
+
+function updateStepInList(row, stepName, newStatus) {
   const step = row.steps?.find(s => s.step_name === stepName)
   if (!step || step.status === newStatus) return
-  const oldStatus = step.status
   step.status = newStatus
   step.operated_by_name = auth.user?.display_name || ''
   step.operated_at = new Date().toISOString().replace('T', ' ').substring(0, 19)
   successFeedback()
-  try {
-    const res = await axios.put(`/api/processes/${row.id}/steps/${stepName}`, { status: newStatus, note: step.note || '' })
-    step.operated_by_name = res.data.operated_by_name || auth.user?.display_name
-    step.operated_at = res.data.operated_at
-  } catch (e) {
-    step.status = oldStatus
-    ElMessage.error('Erro ao atualizar etapa')
-  }
+  queueSync('step', { processId: row.id, stepName, status: newStatus, note: step.note })
 }
 
-async function saveField(row, field) {
+function saveField(row, field) {
   feedback()
-  try {
-    await axios.put(`/api/processes/${row.id}`, { [field]: row[field] || '' })
-  } catch (e) {
-    ElMessage.error('Erro ao salvar')
-  }
+  queueSync('field', { processId: row.id, field, value: row[field] || '' })
 }
 
-async function saveDuNumber(row) {
+function saveDuNumber(row) {
   feedback()
-  try {
-    await axios.put(`/api/processes/${row.id}`, { du_number: row.du_number || '' })
-  } catch (e) {
-    ElMessage.error('Erro ao salvar Nº DU')
-  }
+  queueSync('field', { processId: row.id, field: 'du_number', value: row.du_number || '' })
 }
 
 function isBlUrgent(row) {
@@ -412,22 +427,14 @@ function rowClassName({ row }) {
   return ''
 }
 
-async function saveFeeAmount(row) {
+function saveFeeAmount(row) {
   feedback()
-  try {
-    await axios.put(`/api/processes/${row.id}`, { fee_amount: row.fee_amount || '' })
-  } catch (e) {
-    ElMessage.error('Erro ao salvar valor')
-  }
+  queueSync('field', { processId: row.id, field: 'fee_amount', value: row.fee_amount || '' })
 }
 
-async function saveFeeStatus(row) {
+function saveFeeStatus(row) {
   feedback()
-  try {
-    await axios.put(`/api/processes/${row.id}`, { fee_status: row.fee_status || '' })
-  } catch (e) {
-    ElMessage.error('Erro ao salvar estado')
-  }
+  queueSync('field', { processId: row.id, field: 'fee_status', value: row.fee_status || '' })
 }
 
 async function loadData() {
@@ -609,11 +616,14 @@ onMounted(() => {
   loadEmpresas()
   socketStore.on('process:created', loadData)
   socketStore.on('process:deleted', loadData)
+  window.addEventListener('beforeunload', flushSync)
 })
 
 onUnmounted(() => {
   clearInterval(clockTimer)
   socketStore.off('process:created')
   socketStore.off('process:deleted')
+  window.removeEventListener('beforeunload', flushSync)
+  flushSync()
 })
 </script>

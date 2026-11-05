@@ -35,9 +35,10 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().t
 
 if (process.env.NODE_ENV === 'production') {
   const distPath = path.join(__dirname, '..', '..', 'frontend', 'dist');
-  app.use(express.static(distPath));
+  app.use(express.static(distPath, { maxAge: '1y', index: false }));
   app.get('*', (req, res) => {
     if (!req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.sendFile(path.join(distPath, 'index.html'));
     }
   });
