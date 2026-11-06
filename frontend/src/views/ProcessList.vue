@@ -1,6 +1,15 @@
 <template>
   <div>
-    <el-card>
+    <div style="background: linear-gradient(135deg, #006400, #228b22); padding: 16px 24px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0;">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <span style="font-size: 28px; font-weight: 900; color: #fff; letter-spacing: 3px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">IMPORTA</span>
+        <span style="font-size: 14px; color: #90ee90;">Processo de Importação</span>
+      </div>
+      <span style="font-size: 18px; color: #fff; font-weight: 700; font-variant-numeric: tabular-nums; padding: 6px 16px; background: rgba(255,255,255,0.15); border-radius: 8px; backdrop-filter: blur(4px);">
+        {{ currentTime }}
+      </span>
+    </div>
+    <el-card style="border-radius: 0 0 8px 8px; margin-top: 0;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
         <div style="display: flex; gap: 12px; align-items: center;">
           <el-input v-model="search" placeholder="Buscar por empresa, BL, contentor..." clearable style="width: 300px;" prefix-icon="Search" @input="debouncedSearch" />

@@ -17,7 +17,7 @@
     <el-container>
       <el-header style="background: #fff; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <el-icon :size="20" style="cursor: pointer; color: #304156;" @click="sidebarCollapsed = !sidebarCollapsed">
+          <el-icon :size="28" style="cursor: pointer; color: #fff; background: #006400; padding: 6px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: all 0.2s;" @click="sidebarCollapsed = !sidebarCollapsed" @mouseenter="$event.target.style.background='#228b22'" @mouseleave="$event.target.style.background='#006400'">
             <Fold v-if="!sidebarCollapsed" />
             <Expand v-else />
           </el-icon>
