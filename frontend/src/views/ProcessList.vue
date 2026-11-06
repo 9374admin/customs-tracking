@@ -52,7 +52,7 @@
             <span v-else>{{ row.container_number }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="prevista_date" label="Prevista" width="100">
+        <el-table-column prop="prevista_date" label="Prevista" width="100" sortable>
           <template #default="{ row }">
             <div :style="isPrevistaUrgent(row) ? 'background: #cc0000; color: #fff; font-weight: 700; padding: 2px 4px; border-radius: 3px; text-align: center;' : 'text-align: center;'">
               <el-date-picker v-model="row.prevista_date" type="date" value-format="YYYY-MM-DD" format="DD/MM/YYYY" size="small" style="width: 90px; font-size: 12px;" @change="saveField(row, 'prevista_date')" v-if="auth.canEdit" />
