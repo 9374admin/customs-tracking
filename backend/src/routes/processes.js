@@ -50,12 +50,22 @@ router.get('/', auth, async (req, res) => {
     sql += ` LIMIT ? OFFSET ?`;
     params.push(parseInt(limit), offset);
     const rows = await db.all(sql, params);
-    const result = [];
-    for (const r of rows) {
-      await ensureSteps(r.id);
-      const steps = await db.all(`SELECT ps.step_name, ps.status, ps.operated_at, ps.operated_by, u.display_name as operated_by_name FROM process_steps ps LEFT JOIN users u ON ps.operated_by = u.id WHERE ps.process_id = ?`, [r.id]);
-      r.steps = steps;
-      result.push(r);
+    const result = rows;
+    if (rows.length > 0) {
+      const ids = rows.map(r => r.id);
+      const placeholders = ids.map(() => '?').join(',');
+      const allSteps = await db.all(
+        `SELECT ps.process_id, ps.step_name, ps.status, ps.operated_at, ps.operated_by, u.display_name as operated_by_name FROM process_steps ps LEFT JOIN users u ON ps.operated_by = u.id WHERE ps.process_id IN (${placeholders}) ORDER BY ps.id`,
+        ids
+      );
+      const stepMap = {};
+      for (const s of allSteps) {
+        if (!stepMap[s.process_id]) stepMap[s.process_id] = [];
+        stepMap[s.process_id].push(s);
+      }
+      for (const r of rows) {
+        r.steps = stepMap[r.id] || [];
+      }
     }
     res.json({ data: result, total: Number(countRow.c), page: parseInt(page), limit: parseInt(limit) });
   } catch (e) {
