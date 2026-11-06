@@ -28,8 +28,8 @@
             <span class="online-dot"></span>
             <span style="font-size: 13px; color: #666;">{{ socketStore.onlineUsers.length }} online</span>
           </div>
-          <el-badge :value="unreadCount" :hidden="unreadCount === 0" :max="99">
-            <el-icon :size="20" style="cursor: pointer;" @click="showNotifications = !showNotifications"><Bell/></el-icon>
+          <el-badge :value="unreadCount" :hidden="unreadCount === 0" :max="99" :type="hasOverrideNotification ? 'danger' : 'primary'">
+            <el-icon :size="20" :style="hasOverrideNotification ? 'cursor: pointer; color: #cc0000;' : 'cursor: pointer;'" @click="showNotifications = !showNotifications"><Bell/></el-icon>
           </el-badge>
           <el-dropdown @command="handleCommand">
             <span style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
@@ -52,9 +52,9 @@
 
     <el-drawer v-model="showNotifications" title="Notificações" direction="rtl" size="350px">
       <div v-if="notifications.length === 0" style="text-align: center; color: #999; padding: 40px;">Sem notificações</div>
-      <div v-for="n in notifications" :key="n.id" style="padding: 12px; border-bottom: 1px solid #eee; cursor: pointer;" @click="markRead(n)">
-        <div style="font-weight: 600; font-size: 14px;">{{ n.title }}</div>
-        <div style="font-size: 12px; color: #999; margin-top: 4px;">{{ n.content }}</div>
+      <div v-for="n in notifications" :key="n.id" :style="n.type === 'override' ? 'padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; background: #fff0f0; border-left: 4px solid #cc0000;' : 'padding: 12px; border-bottom: 1px solid #eee; cursor: pointer;'" @click="markRead(n)">
+        <div :style="n.type === 'override' ? 'font-weight: 700; font-size: 14px; color: #cc0000;' : 'font-weight: 600; font-size: 14px;'">{{ n.title }}</div>
+        <div :style="n.type === 'override' ? 'font-size: 12px; color: #cc0000; margin-top: 4px;' : 'font-size: 12px; color: #999; margin-top: 4px;'">{{ n.content }}</div>
         <div style="font-size: 11px; color: #ccc; margin-top: 4px;">{{ n.created_at }}</div>
       </div>
     </el-drawer>
@@ -76,6 +76,7 @@ const notifications = ref([])
 const sidebarCollapsed = ref(false)
 
 const unreadCount = computed(() => notifications.value.filter(n => !n.is_read).length)
+const hasOverrideNotification = computed(() => notifications.value.some(n => n.type === 'override' && !n.is_read))
 
 async function loadNotifications() {
   try {

@@ -161,9 +161,20 @@ router.put('/:id/steps/:stepName', auth, async (req, res) => {
     await logOperation(req.user.id, 'step_update', 'process_step', id, `${label}: ${old?.status || 'selecionar'} → ${status}`, old?.status, status);
     const step = await db.get(`SELECT ps.*, u.display_name as operated_by_name, u.account_code as operated_by_code FROM process_steps ps LEFT JOIN users u ON ps.operated_by = u.id WHERE ps.process_id = ? AND ps.step_name = ?`, [id, stepName]);
     req.app.get('io')?.emit('step:updated', { processId: id, step });
+    const procInfo = await db.get('SELECT bl_number, seq_no FROM processes WHERE id = ?', [id]);
+    const bl = procInfo?.bl_number || '';
+    if (old && old.operated_by && old.operated_by !== req.user.id && old.status !== 'selecionar') {
+      const users = await db.all('SELECT id FROM users WHERE is_active = 1');
+      const title = `Alteração por outra pessoa (BL: ${bl})`;
+      const content = `Processo #${procInfo?.seq_no || id} - BL: ${bl} - ${label} alterado de "${old.status}" para "${status}" por ${req.user.displayName}`;
+      for (const u of users) {
+        if (u.id !== req.user.id) {
+          await db.run(`INSERT INTO notifications (user_id, type, title, content, related_id) VALUES (?, 'override', ?, ?, ?)`, [u.id, title, content, id]);
+        }
+      }
+      req.app.get('io')?.emit('notification:new', { title, content, relatedId: id, type: 'override' });
+    }
     if (status === 'concluido') {
-      const procInfo = await db.get('SELECT bl_number, seq_no FROM processes WHERE id = ?', [id]);
-      const bl = procInfo?.bl_number || '';
       const users = await db.all('SELECT id FROM users WHERE is_active = 1');
       const title = `Etapa concluída: ${label} (BL: ${bl})`;
       const content = `Processo #${procInfo?.seq_no || id} - BL: ${bl} - ${label} marcado como concluído por ${req.user.displayName}`;

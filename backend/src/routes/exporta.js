@@ -127,6 +127,19 @@ router.put('/:id/step/:step', auth, async (req, res) => {
     }
     await db.run(`UPDATE export_processes SET updated_at = ${db.isPostgres ? 'NOW()' : 'datetime(\'now\')'}, updated_by = ? WHERE id = ?`, [req.user.id, id]);
     await logOperation(req.user.id, 'step_update', 'export_process', id, `${step} -> ${status}`);
+    if (existing && existing.operated_by && existing.operated_by !== req.user.id && existing.status !== 'selecionar') {
+      const procInfo = await db.get('SELECT bl, seq_no FROM export_processes WHERE id = ?', [id]);
+      const bl = procInfo?.bl || '';
+      const users = await db.all('SELECT id FROM users WHERE is_active = 1');
+      const title = `Alteração por outra pessoa (BL: ${bl})`;
+      const content = `Exporta #${procInfo?.seq_no || id} - BL: ${bl} - ${step} alterado de "${existing.status}" para "${status}" por ${req.user.displayName}`;
+      for (const u of users) {
+        if (u.id !== req.user.id) {
+          await db.run(`INSERT INTO notifications (user_id, type, title, content, related_id) VALUES (?, 'override', ?, ?, ?)`, [u.id, title, content, id]);
+        }
+      }
+      req.app.get('io')?.emit('notification:new', { title, content, relatedId: id, type: 'override' });
+    }
     const proc = await getExportWithSteps(id);
     res.json(proc);
   } catch (e) {
