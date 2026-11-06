@@ -11,6 +11,15 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: 'dist'
+    outDir: 'dist',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-vue': ['vue', 'vue-router', 'pinia'],
+          'vendor-element': ['element-plus', '@element-plus/icons-vue'],
+          'vendor-echarts': ['echarts'],
+        }
+      }
+    }
   }
 })
