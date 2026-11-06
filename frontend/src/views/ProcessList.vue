@@ -40,8 +40,10 @@
         </el-table-column>
         <el-table-column prop="bl_number" label="Nº BL" width="120" fixed="left">
           <template #default="{ row }">
-            <el-input v-model="row.bl_number" size="small" :style="getBlStyle(row)" @change="saveField(row, 'bl_number')" v-if="auth.canEdit" />
-            <span v-else :style="getBlSpanStyle(row)">{{ row.bl_number }}</span>
+            <div :style="isBlDuplicate(row) ? 'background: #0d3b66; padding: 2px 4px; border-radius: 3px; width: 100%;' : ''">
+              <el-input v-model="row.bl_number" size="small" :style="isBlDuplicate(row) ? 'font-size: 16px; color: #fff; font-weight: 700; width: 100%; --el-fill-color-blank: transparent;' : 'font-size: 16px; width: 100%;'" @change="saveField(row, 'bl_number')" v-if="auth.canEdit" />
+              <span v-else :style="isBlDuplicate(row) ? 'color: #fff; font-weight: 700; font-size: 16px;' : 'font-size: 16px;'">{{ row.bl_number }}</span>
+            </div>
           </template>
         </el-table-column>
         <el-table-column prop="container_number" label="Nº Contentor" width="100">

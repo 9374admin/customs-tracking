@@ -31,8 +31,10 @@
 
         <el-table-column prop="bl" label="BL" width="120" fixed="left">
           <template #default="{ row }">
-            <el-input v-model="row.bl" size="small" :style="isBlDuplicate(row) ? 'font-size: 14px; color: #0d3b66; font-weight: 700; width: 100%; background: #d6e4ff;' : 'font-size: 14px; width: 100%;'" @change="saveField(row, 'bl')" v-if="auth.canEdit" />
-            <span v-else :style="isBlDuplicate(row) ? 'font-size: 14px; color: #0d3b66; font-weight: 700;' : 'font-size: 14px;'">{{ row.bl }}</span>
+            <div :style="isBlDuplicate(row) ? 'background: #0d3b66; padding: 2px 4px; border-radius: 3px; width: 100%;' : ''">
+              <el-input v-model="row.bl" size="small" :style="isBlDuplicate(row) ? 'font-size: 14px; color: #fff; font-weight: 700; width: 100%; --el-fill-color-blank: transparent;' : 'font-size: 14px; width: 100%;'" @change="saveField(row, 'bl')" v-if="auth.canEdit" />
+              <span v-else :style="isBlDuplicate(row) ? 'font-size: 14px; color: #fff; font-weight: 700;' : 'font-size: 14px;'">{{ row.bl }}</span>
+            </div>
           </template>
         </el-table-column>
 
