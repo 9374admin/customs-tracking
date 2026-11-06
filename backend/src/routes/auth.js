@@ -35,14 +35,25 @@ router.get('/', auth, requireRole('admin'), async (req, res) => {
 router.post('/', auth, requireRole('admin'), async (req, res) => {
   try {
     const { username, password, display_name, role, account_code } = req.body;
+    if (!username) return res.status(400).json({ error: 'Utilizador é obrigatório' });
+    if (!password) return res.status(400).json({ error: 'Senha é obrigatória' });
+    const existing = await db.get('SELECT id FROM users WHERE username = ?', [username]);
+    if (existing) return res.status(400).json({ error: 'Utilizador já existe' });
     const hash = bcrypt.hashSync(password, 10);
+    let finalCode = account_code || '';
+    if (!finalCode) {
+      finalCode = 'USR' + Date.now().toString().slice(-6);
+    } else {
+      const codeExists = await db.get('SELECT id FROM users WHERE account_code = ?', [finalCode]);
+      if (codeExists) return res.status(400).json({ error: 'Código de conta já existe' });
+    }
     const info = await db.run(
       'INSERT INTO users (username, password_hash, display_name, role, account_code) VALUES (?,?,?,?,?)',
-      [username, hash, display_name, role || 'operator', account_code]
+      [username, hash, display_name || username, role || 'operator', finalCode]
     );
-    res.json({ id: info.lastInsertRowid, username, display_name, role, account_code });
+    res.json({ id: info.lastInsertRowid, username, display_name: display_name || username, role: role || 'operator', account_code: finalCode });
   } catch (e) {
-    res.status(400).json({ error: 'Utilizador ou código de conta já existe' });
+    res.status(400).json({ error: e.message });
   }
 });
 

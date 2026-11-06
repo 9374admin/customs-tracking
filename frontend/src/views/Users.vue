@@ -36,9 +36,9 @@
 
     <el-dialog v-model="showCreate" title="Novo Utilizador" width="450px">
       <el-form label-width="120px">
-        <el-form-item label="Utilizador"><el-input v-model="createForm.username" /></el-form-item>
+        <el-form-item label="Utilizador"><el-input v-model="createForm.username" placeholder="Obrigatório" /></el-form-item>
         <el-form-item label="Nome"><el-input v-model="createForm.display_name" /></el-form-item>
-        <el-form-item label="Código"><el-input v-model="createForm.account_code" /></el-form-item>
+        <el-form-item label="Código"><el-input v-model="createForm.account_code" placeholder="Opcional (auto)" /></el-form-item>
         <el-form-item label="Função">
           <el-select v-model="createForm.role" style="width: 100%;">
             <el-option label="Administrador" value="admin" />
@@ -46,7 +46,7 @@
             <el-option label="Visualizador" value="viewer" />
           </el-select>
         </el-form-item>
-        <el-form-item label="Senha"><el-input v-model="createForm.password" type="password" show-password /></el-form-item>
+        <el-form-item label="Senha"><el-input v-model="createForm.password" type="password" show-password placeholder="Obrigatório" /></el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="showCreate = false">Cancelar</el-button>
