@@ -14,10 +14,12 @@ export default defineConfig({
     outDir: 'dist',
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-vue': ['vue', 'vue-router', 'pinia'],
-          'vendor-element': ['element-plus', '@element-plus/icons-vue'],
-          'vendor-echarts': ['echarts'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('element-plus') || id.includes('@element-plus/icons-vue')) return 'vendor-element'
+            if (id.includes('echarts') || id.includes('zrender')) return 'vendor-echarts'
+            if (id.includes('vue') || id.includes('pinia')) return 'vendor-vue'
+          }
         }
       }
     }
