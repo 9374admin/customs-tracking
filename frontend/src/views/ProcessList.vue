@@ -60,8 +60,8 @@
         </el-table-column>
         <el-table-column v-for="step in STEP_NAMES" :key="step" :label="STEP_LABELS[step]" :width="step === 'du' ? 140 : 85" align="center">
           <template #default="{ row }">
-            <div :style="step === 'du' ? 'display: flex; flex-direction: row; align-items: center; gap: 4px; justify-content: center;' : 'display: flex; flex-direction: column; align-items: center;'">
-              <el-input v-if="step === 'du' && auth.canEdit" v-model="row.du_number" size="small" placeholder="R..." style="width: 60px; font-size: 12px;" @change="saveDuNumber(row)" />
+            <div :style="step === 'du' ? 'display: flex; flex-direction: row; align-items: center; gap: 4px; justify-content: flex-start;' : 'display: flex; flex-direction: column; align-items: center;'">
+              <el-input v-if="step === 'du' && auth.canEdit" v-model="row.du_number" size="small" placeholder="R..." style="width: 90px; font-size: 12px;" @change="saveDuNumber(row)" />
               <span v-else-if="step === 'du' && row.du_number" style="font-size: 12px; color: #409eff; font-weight: 600;">{{ row.du_number }}</span>
               <el-dropdown trigger="click" @command="(cmd) => updateStepInList(row, step, cmd)" v-if="auth.canEdit && step !== 'du'">
                 <el-tag :type="getStepTagType(row, step)" :style="getStepTagStyle(row, step)" style="cursor: pointer; min-width: 64px; text-align: center; display: inline-block; font-size: 12px; padding: 3px 6px;">
@@ -91,7 +91,7 @@
               <el-tag v-else-if="step !== 'du'" :type="getStepTagType(row, step)" :style="getStepTagStyle(row, step)" style="min-width: 64px; text-align: center; display: inline-block; font-size: 12px; padding: 3px 6px;">
                 {{ getStepStatusShort(row, step) }}
               </el-tag>
-              <div v-if="getStepOperatedCode(row, step)" style="font-size: 9px; margin-top: 2px; line-height: 1.2; white-space: nowrap;">
+              <div v-if="step !== 'du' && getStepOperatedCode(row, step)" style="font-size: 9px; margin-top: 2px; line-height: 1.2; white-space: nowrap;">
                 <span style="color: #409eff; font-weight: 600;">{{ getStepOperatedCode(row, step) }}</span>
                 <span style="color: #c0c4cc;"> {{ getStepOperatedTime(row, step) }}</span>
               </div>
