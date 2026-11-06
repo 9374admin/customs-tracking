@@ -369,10 +369,22 @@ async function flushSync() {
   syncing = false
 }
 
-function updateStepInList(row, stepName, newStatus) {
+async function updateStepInList(row, stepName, newStatus) {
   const step = row.steps?.find(s => s.step_name === stepName)
   if (!step || step.status === newStatus) return
+  if (step.operated_by && step.operated_by !== auth.user?.id && step.status !== 'selecionar') {
+    try {
+      await ElMessageBox.confirm(
+        'Confirma a alteração do progresso operado por outra pessoa?',
+        'Confirmação',
+        { confirmButtonText: 'Sim', cancelButtonText: 'Não', type: 'warning' }
+      )
+    } catch {
+      return
+    }
+  }
   step.status = newStatus
+  step.operated_by = auth.user?.id
   step.operated_by_name = auth.user?.display_name || ''
   step.operated_at = new Date().toISOString().replace('T', ' ').substring(0, 19)
   successFeedback()
