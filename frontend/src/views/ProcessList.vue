@@ -61,7 +61,7 @@
         <el-table-column v-for="step in STEP_NAMES" :key="step" :label="STEP_LABELS[step]" :width="step === 'du' ? 140 : 85" align="center">
           <template #default="{ row }">
             <div :style="step === 'du' ? 'display: flex; flex-direction: row; align-items: center; gap: 4px; justify-content: flex-start;' : 'display: flex; flex-direction: column; align-items: center;'">
-              <el-input v-if="step === 'du' && auth.canEdit" v-model="row.du_number" size="small" placeholder="R..." style="width: 90px; font-size: 12px;" @change="saveDuNumber(row)" />
+              <el-input v-if="step === 'du' && auth.canEdit" v-model="row.du_number" size="small" placeholder="R..." style="width: 90px; font-size: 12px; flex-shrink: 0;" @change="saveDuNumber(row)" />
               <span v-else-if="step === 'du' && row.du_number" style="font-size: 12px; color: #409eff; font-weight: 600;">{{ row.du_number }}</span>
               <el-dropdown trigger="click" @command="(cmd) => updateStepInList(row, step, cmd)" v-if="auth.canEdit && step !== 'du'">
                 <el-tag :type="getStepTagType(row, step)" :style="getStepTagStyle(row, step)" style="cursor: pointer; min-width: 64px; text-align: center; display: inline-block; font-size: 12px; padding: 3px 6px;">
@@ -95,7 +95,7 @@
                 <span style="color: #409eff; font-weight: 600;">{{ getStepOperatedCode(row, step) }}</span>
                 <span style="color: #c0c4cc;"> {{ getStepOperatedTime(row, step) }}</span>
               </div>
-              <div style="margin-top: 2px; display: flex; gap: 4px; align-items: center;">
+              <div :style="step === 'du' ? 'display: flex; gap: 4px; align-items: center;' : 'margin-top: 2px; display: flex; gap: 4px; align-items: center;'">
                 <el-icon :size="13" style="cursor: pointer; color: #409eff;" @click="openFileDialog(row.id, step)"><Paperclip /></el-icon>
                 <span v-if="fileCount(row.id, step)" style="font-size: 10px; color: #006400; font-weight: 600; cursor: pointer;" @click="openFileDialog(row.id, step)">{{ fileCount(row.id, step) }}</span>
               </div>
