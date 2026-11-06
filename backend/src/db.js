@@ -288,6 +288,9 @@ async function initDB() {
   if (!colNames.includes('fecho')) {
     await driver.exec('ALTER TABLE processes ADD COLUMN fecho TEXT DEFAULT \'\'');
   }
+  if (!colNames.includes('navio')) {
+    await driver.exec('ALTER TABLE processes ADD COLUMN navio TEXT DEFAULT \'\'');
+  }
 
   const exportCols = await driver.tableInfo('export_processes');
   const exportColNames = exportCols.map(c => c.name);

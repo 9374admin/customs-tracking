@@ -58,6 +58,12 @@
             </div>
           </template>
         </el-table-column>
+        <el-table-column prop="navio" label="NAVIO" width="90">
+          <template #default="{ row }">
+            <el-input v-model="row.navio" size="small" style="font-size: 12px;" @change="saveField(row, 'navio')" v-if="auth.canEdit" />
+            <span v-else style="font-size: 12px;">{{ row.navio }}</span>
+          </template>
+        </el-table-column>
         <el-table-column v-for="step in STEP_NAMES" :key="step" :label="STEP_LABELS[step]" :width="step === 'du' ? 140 : 85" align="center">
           <template #default="{ row }">
             <div :style="step === 'du' ? 'display: flex; flex-direction: row; align-items: center; gap: 4px; justify-content: flex-start;' : 'display: flex; flex-direction: column; align-items: center;'">
@@ -150,6 +156,7 @@
         <el-form-item label="Nº BL"><el-input v-model="createForm.bl_number" /></el-form-item>
         <el-form-item label="Nº Contentor"><el-input v-model="createForm.container_number" /></el-form-item>
         <el-form-item label="Data Prevista"><el-date-picker v-model="createForm.prevista_date" type="date" value-format="YYYY-MM-DD" style="width: 100%;" /></el-form-item>
+        <el-form-item label="Navio"><el-input v-model="createForm.navio" /></el-form-item>
         <el-form-item label="Nº DU (R...)"><el-input v-model="createForm.du_number" placeholder="R20260012345" /></el-form-item>
         <el-form-item label="Valor Pagamento"><el-input v-model="createForm.fee_amount" placeholder="0.00" /></el-form-item>
         <el-form-item label="Estado Pagamento">
@@ -238,7 +245,7 @@ const fileList = ref([])
 const fileLoading = ref(false)
 const fileCounts = ref({})
 
-const createForm = ref({ empresa: '', bl_number: '', container_number: '', prevista_date: '', fee_status: '', fee_amount: '', du_number: '', fecho: '', notes: '' })
+const createForm = ref({ empresa: '', bl_number: '', container_number: '', prevista_date: '', navio: '', fee_status: '', fee_amount: '', du_number: '', fecho: '', notes: '' })
 
 let debounceTimer = null
 function debouncedSearch() {
@@ -487,7 +494,7 @@ async function createProcess() {
     ElMessage.success('Processo criado')
     successFeedback()
     showCreate.value = false
-    createForm.value = { empresa: '', bl_number: '', container_number: '', prevista_date: '', fee_status: '', fee_amount: '', du_number: '', fecho: '', notes: '' }
+    createForm.value = { empresa: '', bl_number: '', container_number: '', prevista_date: '', navio: '', fee_status: '', fee_amount: '', du_number: '', fecho: '', notes: '' }
     router.push(`/processes/${res.data.id}`)
   } catch (e) {
     ElMessage.error('Erro ao criar processo')

@@ -7,7 +7,7 @@ export const STEP_NAMES = [
 export const STEP_LABELS = {
   licenca_aprovacao: 'Licença/Aprovação',
   du: 'DU',
-  talex: 'Talex',
+  talex: 'TELEX',
   cnca: 'CNCA',
   nota_cnca: 'NOTA',
   recibo: 'Recibo',

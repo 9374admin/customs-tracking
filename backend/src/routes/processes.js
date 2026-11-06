@@ -45,7 +45,7 @@ router.get('/', auth, async (req, res) => {
     }
     if (empresa) { where += ' AND p.empresa = ?'; params.push(empresa); }
     const countRow = await db.get(`SELECT COUNT(*) as c FROM processes p WHERE ${where}`, params);
-    let sql = `SELECT p.id, p.seq_no, p.empresa, p.bl_number, p.container_number, p.prevista_date, p.fee_status, p.fee_amount, p.du_number, p.fecho, p.notes, p.created_at, p.updated_at FROM processes p WHERE ${where} ORDER BY p.seq_no ASC`;
+    let sql = `SELECT p.id, p.seq_no, p.empresa, p.bl_number, p.container_number, p.prevista_date, p.fee_status, p.fee_amount, p.du_number, p.fecho, p.navio, p.notes, p.created_at, p.updated_at FROM processes p WHERE ${where} ORDER BY p.seq_no ASC`;
     const offset = (parseInt(page) - 1) * parseInt(limit);
     sql += ` LIMIT ? OFFSET ?`;
     params.push(parseInt(limit), offset);
@@ -76,12 +76,12 @@ router.get('/:id', auth, async (req, res) => {
 
 router.post('/', auth, async (req, res) => {
   try {
-    const { empresa, bl_number, container_number, prevista_date, fee_status, fee_amount, du_number, fecho, notes } = req.body;
+    const { empresa, bl_number, container_number, prevista_date, fee_status, fee_amount, du_number, fecho, notes, navio } = req.body;
     const maxSeq = await db.get('SELECT MAX(seq_no) as m FROM processes');
     const seqNo = (maxSeq.m || 0) + 1;
     const info = await db.run(
-      `INSERT INTO processes (seq_no, empresa, bl_number, container_number, prevista_date, fee_status, fee_amount, du_number, fecho, notes, created_by, updated_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
-      [seqNo, empresa || '', bl_number || '', container_number || '', prevista_date || '', fee_status || '', fee_amount || '', du_number || '', fecho || '', notes || '', req.user.id, req.user.id]
+      `INSERT INTO processes (seq_no, empresa, bl_number, container_number, prevista_date, fee_status, fee_amount, du_number, fecho, notes, navio, created_by, updated_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      [seqNo, empresa || '', bl_number || '', container_number || '', prevista_date || '', fee_status || '', fee_amount || '', du_number || '', fecho || '', notes || '', navio || '', req.user.id, req.user.id]
     );
     await ensureSteps(info.lastInsertRowid);
     await logOperation(req.user.id, 'create', 'process', info.lastInsertRowid, `Criou processo ${seqNo} - ${empresa || ''}`);
@@ -98,7 +98,7 @@ router.put('/:id', auth, async (req, res) => {
     const id = parseInt(req.params.id);
     const old = await db.get('SELECT * FROM processes WHERE id = ?', [id]);
     if (!old) return res.status(404).json({ error: 'Processo não encontrado' });
-    const { seq_no, empresa, bl_number, container_number, prevista_date, fee_status, fee_amount, du_number, fecho, notes } = req.body;
+    const { seq_no, empresa, bl_number, container_number, prevista_date, fee_status, fee_amount, du_number, fecho, notes, navio } = req.body;
     const updates = {};
     if (seq_no !== undefined) updates.seq_no = seq_no;
     if (empresa !== undefined) updates.empresa = empresa;
@@ -110,6 +110,7 @@ router.put('/:id', auth, async (req, res) => {
     if (du_number !== undefined) updates.du_number = du_number;
     if (fecho !== undefined) updates.fecho = fecho;
     if (notes !== undefined) updates.notes = notes;
+    if (navio !== undefined) updates.navio = navio;
     const setClauses = Object.keys(updates).map(k => `${k} = ?`);
     const vals = Object.values(updates);
     if (setClauses.length > 0) {
