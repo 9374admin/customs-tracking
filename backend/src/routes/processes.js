@@ -162,9 +162,11 @@ router.put('/:id/steps/:stepName', auth, async (req, res) => {
     const step = await db.get(`SELECT ps.*, u.display_name as operated_by_name, u.account_code as operated_by_code FROM process_steps ps LEFT JOIN users u ON ps.operated_by = u.id WHERE ps.process_id = ? AND ps.step_name = ?`, [id, stepName]);
     req.app.get('io')?.emit('step:updated', { processId: id, step });
     if (status === 'concluido') {
+      const procInfo = await db.get('SELECT bl_number, seq_no FROM processes WHERE id = ?', [id]);
+      const bl = procInfo?.bl_number || '';
       const users = await db.all('SELECT id FROM users WHERE is_active = 1');
-      const title = `Etapa concluída: ${label}`;
-      const content = `Processo #${id} - ${label} marcado como concluído por ${req.user.displayName}`;
+      const title = `Etapa concluída: ${label} (BL: ${bl})`;
+      const content = `Processo #${procInfo?.seq_no || id} - BL: ${bl} - ${label} marcado como concluído por ${req.user.displayName}`;
       for (const u of users) {
         if (u.id !== req.user.id) {
           await db.run(`INSERT INTO notifications (user_id, type, title, content, related_id) VALUES (?, 'step', ?, ?, ?)`, [u.id, title, content, id]);
