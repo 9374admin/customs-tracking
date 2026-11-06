@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
+const compression = require('compression');
 const path = require('path');
 const { initDB } = require('./db');
 const { setupSocket } = require('./socket');
@@ -15,6 +16,7 @@ app.set('io', io);
 setupSocket(io);
 
 app.use(cors());
+app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
