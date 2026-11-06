@@ -40,8 +40,8 @@
         </el-table-column>
         <el-table-column prop="bl_number" label="Nº BL" width="120" fixed="left">
           <template #default="{ row }">
-            <el-input v-model="row.bl_number" size="small" :style="isBlUrgent(row) ? 'font-size: 16px; color: #cc0000; font-weight: 700; width: 100%;' : 'font-size: 16px; width: 100%;'" @change="saveField(row, 'bl_number')" v-if="auth.canEdit" />
-            <span v-else :style="isBlUrgent(row) ? 'color: #cc0000; font-weight: 700; font-size: 16px;' : 'font-size: 16px;'">{{ row.bl_number }}</span>
+            <el-input v-model="row.bl_number" size="small" :style="getBlStyle(row)" @change="saveField(row, 'bl_number')" v-if="auth.canEdit" />
+            <span v-else :style="getBlSpanStyle(row)">{{ row.bl_number }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="container_number" label="Nº Contentor" width="100">
@@ -390,6 +390,23 @@ function isBlUrgent(row) {
     return !legalStep || legalStep.status === 'selecionar'
   }
   return false
+}
+
+function isBlDuplicate(row) {
+  if (!row.bl_number) return false
+  return data.value.filter(r => r.bl_number && r.bl_number === row.bl_number).length > 1
+}
+
+function getBlStyle(row) {
+  if (isBlDuplicate(row)) return 'font-size: 16px; color: #0d3b66; font-weight: 700; width: 100%; background: #d6e4ff;'
+  if (isBlUrgent(row)) return 'font-size: 16px; color: #cc0000; font-weight: 700; width: 100%;'
+  return 'font-size: 16px; width: 100%;'
+}
+
+function getBlSpanStyle(row) {
+  if (isBlDuplicate(row)) return 'color: #0d3b66; font-weight: 700; font-size: 16px;'
+  if (isBlUrgent(row)) return 'color: #cc0000; font-weight: 700; font-size: 16px;'
+  return 'font-size: 16px;'
 }
 
 function isPrevistaUrgent(row) {

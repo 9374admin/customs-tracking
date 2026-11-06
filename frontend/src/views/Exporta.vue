@@ -31,8 +31,8 @@
 
         <el-table-column prop="bl" label="BL" width="120" fixed="left">
           <template #default="{ row }">
-            <el-input v-model="row.bl" size="small" style="font-size: 14px; width: 100%;" @change="saveField(row, 'bl')" v-if="auth.canEdit" />
-            <span v-else style="font-size: 14px;">{{ row.bl }}</span>
+            <el-input v-model="row.bl" size="small" :style="isBlDuplicate(row) ? 'font-size: 14px; color: #0d3b66; font-weight: 700; width: 100%; background: #d6e4ff;' : 'font-size: 14px; width: 100%;'" @change="saveField(row, 'bl')" v-if="auth.canEdit" />
+            <span v-else :style="isBlDuplicate(row) ? 'font-size: 14px; color: #0d3b66; font-weight: 700;' : 'font-size: 14px;'">{{ row.bl }}</span>
           </template>
         </el-table-column>
 
@@ -439,6 +439,11 @@ function isPartidaUrgent(row) {
   const now = new Date()
   const diffDays = (partida - now) / (1000 * 60 * 60 * 24)
   return diffDays < 5
+}
+
+function isBlDuplicate(row) {
+  if (!row.bl) return false
+  return data.value.filter(r => r.bl && r.bl === row.bl).length > 1
 }
 
 const syncQueue = []
