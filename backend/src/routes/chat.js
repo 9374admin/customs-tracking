@@ -73,4 +73,9 @@ router.put('/notifications/read-all', auth, async (req, res) => {
   res.json({ ok: true });
 });
 
+router.delete('/notifications/:id', auth, async (req, res) => {
+  await db.run('DELETE FROM notifications WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+  res.json({ ok: true });
+});
+
 module.exports = router;

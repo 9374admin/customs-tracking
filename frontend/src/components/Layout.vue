@@ -52,10 +52,15 @@
 
     <el-drawer v-model="showNotifications" title="Notificações" direction="rtl" size="350px">
       <div v-if="notifications.length === 0" style="text-align: center; color: #999; padding: 40px;">Sem notificações</div>
-      <div v-for="n in notifications" :key="n.id" :style="n.type === 'override' ? 'padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; background: #fff0f0; border-left: 4px solid #cc0000;' : 'padding: 12px; border-bottom: 1px solid #eee; cursor: pointer;'" @click="markRead(n)">
-        <div :style="n.type === 'override' ? 'font-weight: 700; font-size: 14px; color: #cc0000;' : 'font-weight: 600; font-size: 14px;'">{{ n.title }}</div>
-        <div :style="n.type === 'override' ? 'font-size: 12px; color: #cc0000; margin-top: 4px;' : 'font-size: 12px; color: #999; margin-top: 4px;'">{{ n.content }}</div>
-        <div style="font-size: 11px; color: #ccc; margin-top: 4px;">{{ n.created_at }}</div>
+      <div v-for="n in notifications" :key="n.id" :style="n.type === 'override' ? 'padding: 12px; border-bottom: 1px solid #eee; background: #fff0f0; border-left: 4px solid #cc0000; display: flex; align-items: flex-start; gap: 8px;' : 'padding: 12px; border-bottom: 1px solid #eee; display: flex; align-items: flex-start; gap: 8px;'">
+        <el-button size="small" type="danger" circle style="flex-shrink: 0; width: 24px; height: 24px; min-height: 24px; padding: 0;" @click.stop="deleteNotification(n)">
+          <el-icon :size="12"><Close/></el-icon>
+        </el-button>
+        <div style="flex: 1; cursor: pointer;" @click="markRead(n)">
+          <div :style="n.type === 'override' ? 'font-weight: 700; font-size: 14px; color: #cc0000;' : 'font-weight: 600; font-size: 14px;'">{{ n.title }}</div>
+          <div :style="n.type === 'override' ? 'font-size: 12px; color: #cc0000; margin-top: 4px;' : 'font-size: 12px; color: #999; margin-top: 4px;'">{{ n.content }}</div>
+          <div style="font-size: 11px; color: #ccc; margin-top: 4px;">{{ n.created_at }}</div>
+        </div>
       </div>
     </el-drawer>
   </el-container>
@@ -91,6 +96,13 @@ function markRead(n) {
     n.is_read = 1
   }
   if (n.related_id) router.push(`/processes/${n.related_id}`)
+}
+
+async function deleteNotification(n) {
+  try {
+    await axios.delete(`/api/chat/notifications/${n.id}`)
+    notifications.value = notifications.value.filter(item => item.id !== n.id)
+  } catch (e) {}
 }
 
 function handleCommand(cmd) {
