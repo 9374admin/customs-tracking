@@ -277,7 +277,10 @@ function updateScrollbarWidth() {
   const bodyWrapper = mainTable.value.$el.querySelector('.el-table__body-wrapper')
   if (!bodyWrapper) return
   const sw = bodyWrapper.scrollWidth
-  if (sw > 0) tableContentWidth.value = sw
+  if (sw > 0) {
+    const adjusted = sw - bodyWrapper.clientWidth + topScrollbar.value.clientWidth
+    tableContentWidth.value = Math.max(adjusted, sw)
+  }
   topScrollbar.value.scrollLeft = bodyWrapper.scrollLeft
 }
 let clockTimer = null
@@ -528,6 +531,8 @@ async function loadData() {
   } finally {
     loading.value = false
     setTimeout(updateScrollbarWidth, 100)
+    setTimeout(updateScrollbarWidth, 500)
+    setTimeout(updateScrollbarWidth, 1000)
   }
 }
 
