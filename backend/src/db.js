@@ -303,6 +303,9 @@ async function initDB() {
   if (!exportColNames.includes('booking_text')) {
     await driver.exec('ALTER TABLE export_processes ADD COLUMN booking_text TEXT DEFAULT \'\'');
   }
+  if (!exportColNames.includes('obs')) {
+    await driver.exec('ALTER TABLE export_processes ADD COLUMN obs TEXT DEFAULT \'\'');
+  }
 }
 
 async function ensureSteps(processId) {

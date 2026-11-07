@@ -256,6 +256,29 @@
             </div>
           </template>
         </el-table-column>
+
+        <el-table-column prop="obs" label="OBS" width="120" align="center" fixed="right">
+          <template #default="{ row }">
+            <div style="display: flex; flex-direction: column; align-items: center;">
+              <el-dropdown trigger="click" @command="(cmd) => updateObs(row, cmd)" v-if="auth.canEdit">
+                <el-tag :style="getObsStyle(row.obs)" style="cursor: pointer; min-width: 80px; text-align: center; display: inline-block; font-size: 12px; padding: 3px 6px;">
+                  {{ getObsLabel(row.obs) }}
+                </el-tag>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="">Por escolher</el-dropdown-item>
+                    <el-dropdown-item command="chegado_ctt">chegado CTT</el-dropdown-item>
+                    <el-dropdown-item command="retorno_ctt">retorno ctt</el-dropdown-item>
+                    <el-dropdown-item command="intercheng">INTERCHENG</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+              <el-tag v-else :style="getObsStyle(row.obs)" style="min-width: 80px; text-align: center; display: inline-block; font-size: 12px; padding: 3px 6px;">
+                {{ getObsLabel(row.obs) }}
+              </el-tag>
+            </div>
+          </template>
+        </el-table-column>
       </el-table>
 
       <div style="display: flex; justify-content: center; margin-top: 16px;">
@@ -508,6 +531,24 @@ function updateFatura(row, newStatus) {
 function saveField(row, field) {
   feedback()
   queueSync('field', { processId: row.id, field, value: row[field] || '' })
+}
+
+function updateObs(row, val) {
+  if (row.obs === val) return
+  row.obs = val
+  successFeedback()
+  queueSync('field', { processId: row.id, field: 'obs', value: val || '' })
+}
+
+function getObsLabel(val) {
+  const map = { 'chegado_ctt': 'chegado CTT', 'retorno_ctt': 'retorno ctt', 'intercheng': 'INTERCHENG' }
+  return map[val] || 'Por escolher'
+}
+
+function getObsStyle(val) {
+  if (val === 'intercheng') return 'background: #c8efd0; color: #006400; border-color: #006400; font-weight: 700;'
+  if (val === 'chegado_ctt' || val === 'retorno_ctt') return 'background: #fff8cc; color: #e6a200; border-color: #ffcc00; font-weight: 600;'
+  return 'background: #f4f4f5; color: #909399; border-color: #dcdfe6;'
 }
 
 async function loadData() {
