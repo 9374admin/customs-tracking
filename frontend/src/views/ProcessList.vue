@@ -624,6 +624,7 @@ function formatFileSize(bytes) {
 
 async function exportExcel() {
   exporting.value = true
+  ElMessage({ message: 'A exportar Excel...', customClass: 'blue-msg', duration: 0 })
   try {
     const res = await axios.get('/api/export/excel', { responseType: 'blob' })
     const url = window.URL.createObjectURL(new Blob([res.data]))
@@ -632,7 +633,10 @@ async function exportExcel() {
     a.download = 'processos.xlsx'
     a.click()
     window.URL.revokeObjectURL(url)
+    ElMessage.closeAll()
+    ElMessage({ message: 'Excel exportado com sucesso!', customClass: 'blue-msg' })
   } catch (e) {
+    ElMessage.closeAll()
     ElMessage.error('Erro ao exportar Excel')
   } finally {
     exporting.value = false
@@ -641,6 +645,7 @@ async function exportExcel() {
 
 async function exportPDF() {
   exporting.value = true
+  ElMessage({ message: 'A exportar PDF...', customClass: 'blue-msg', duration: 0 })
   try {
     const res = await axios.get('/api/export/pdf', { responseType: 'blob' })
     const url = window.URL.createObjectURL(new Blob([res.data]))
@@ -649,7 +654,10 @@ async function exportPDF() {
     a.download = 'processos.pdf'
     a.click()
     window.URL.revokeObjectURL(url)
+    ElMessage.closeAll()
+    ElMessage({ message: 'PDF exportado com sucesso!', customClass: 'blue-msg' })
   } catch (e) {
+    ElMessage.closeAll()
     ElMessage.error('Erro ao exportar PDF')
   } finally {
     exporting.value = false

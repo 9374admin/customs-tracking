@@ -1,6 +1,9 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; font-size: 15px; }
 
+.blue-msg { color: #1a5276 !important; font-weight: 700 !important; font-size: 15px !important; }
+.blue-msg .el-message__content { color: #1a5276 !important; font-weight: 700 !important; }
+
 .step-status-selecionar { color: #909399; }
 .step-status-em_curso { color: #e6a200; font-weight: 600; }
 .step-status-concluido { color: #006400; font-weight: 600; }
