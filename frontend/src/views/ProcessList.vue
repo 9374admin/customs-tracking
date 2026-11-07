@@ -255,33 +255,47 @@ const topScrollbar = ref(null)
 const mainTable = ref(null)
 const tableContentWidth = ref(3000)
 let syncingScroll = false
+let scrollListenerBound = false
+
+function getScrollEl() {
+  if (!mainTable.value) return null
+  const el = mainTable.value.$el
+  return el.querySelector('.el-table__body-wrapper .el-scrollbar__wrap') ||
+         el.querySelector('.el-table__body-wrapper') || null
+}
 
 function onTopScroll() {
-  if (syncingScroll || !topScrollbar.value || !mainTable.value) return
+  if (syncingScroll || !topScrollbar.value) return
+  const scrollEl = getScrollEl()
+  if (!scrollEl) return
   syncingScroll = true
-  const bodyWrapper = mainTable.value.$el.querySelector('.el-table__body-wrapper')
-  if (bodyWrapper) bodyWrapper.scrollLeft = topScrollbar.value.scrollLeft
+  scrollEl.scrollLeft = topScrollbar.value.scrollLeft
   syncingScroll = false
 }
 
 function onBodyScroll() {
-  if (syncingScroll || !topScrollbar.value || !mainTable.value) return
+  if (syncingScroll || !topScrollbar.value) return
+  const scrollEl = getScrollEl()
+  if (!scrollEl) return
   syncingScroll = true
-  const bodyWrapper = mainTable.value.$el.querySelector('.el-table__body-wrapper')
-  if (bodyWrapper) topScrollbar.value.scrollLeft = bodyWrapper.scrollLeft
+  topScrollbar.value.scrollLeft = scrollEl.scrollLeft
   syncingScroll = false
 }
 
 function updateScrollbarWidth() {
   if (!mainTable.value || !topScrollbar.value) return
-  const bodyWrapper = mainTable.value.$el.querySelector('.el-table__body-wrapper')
-  if (!bodyWrapper) return
-  const sw = bodyWrapper.scrollWidth
+  const scrollEl = getScrollEl()
+  if (!scrollEl) return
+  if (!scrollListenerBound) {
+    scrollEl.addEventListener('scroll', onBodyScroll)
+    scrollListenerBound = true
+  }
+  const sw = scrollEl.scrollWidth
   if (sw > 0) {
-    const adjusted = sw - bodyWrapper.clientWidth + topScrollbar.value.clientWidth
+    const adjusted = sw - scrollEl.clientWidth + topScrollbar.value.clientWidth
     tableContentWidth.value = Math.max(adjusted, sw)
   }
-  topScrollbar.value.scrollLeft = bodyWrapper.scrollLeft
+  topScrollbar.value.scrollLeft = scrollEl.scrollLeft
 }
 let clockTimer = null
 
@@ -713,12 +727,7 @@ onMounted(() => {
   window.addEventListener('beforeunload', flushSync)
   window.addEventListener('resize', updateScrollbarWidth)
   setTimeout(() => {
-    if (mainTable.value) {
-      const bodyWrapper = mainTable.value.$el.querySelector('.el-table__body-wrapper')
-      if (bodyWrapper) {
-        bodyWrapper.addEventListener('scroll', onBodyScroll)
-      }
-    }
+
     updateScrollbarWidth()
   }, 500)
 })
