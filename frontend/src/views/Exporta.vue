@@ -261,7 +261,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="obs" label="OBS" width="120" align="center" fixed="right">
+        <el-table-column prop="obs" label="OBS" width="120" align="center">
           <template #default="{ row }">
             <div style="display: flex; flex-direction: column; align-items: center;">
               <el-dropdown trigger="click" @command="(cmd) => updateObs(row, cmd)" v-if="auth.canEdit">
