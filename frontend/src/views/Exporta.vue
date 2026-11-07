@@ -391,6 +391,15 @@ function onBodyScroll() {
   syncingScroll = false
 }
 
+function updateScrollbarWidth() {
+  if (!mainTable.value || !topScrollbar.value) return
+  const bodyWrapper = mainTable.value.$el.querySelector('.el-table__body-wrapper')
+  if (!bodyWrapper) return
+  const sw = bodyWrapper.scrollWidth
+  if (sw > 0) tableContentWidth.value = sw
+  topScrollbar.value.scrollLeft = bodyWrapper.scrollLeft
+}
+
 const STEP_COLS = [
 
   { key: 'ctt', label: 'CTT' },
@@ -585,6 +594,7 @@ async function loadData() {
     ElMessage.error('Erro ao carregar dados')
   } finally {
     loading.value = false
+    setTimeout(updateScrollbarWidth, 100)
   }
 }
 
@@ -686,21 +696,22 @@ onMounted(() => {
   clockTimer = setInterval(updateClock, 1000)
   loadData()
   window.addEventListener('beforeunload', flushSync)
+  window.addEventListener('resize', updateScrollbarWidth)
   setTimeout(() => {
     if (mainTable.value) {
       const bodyWrapper = mainTable.value.$el.querySelector('.el-table__body-wrapper')
       if (bodyWrapper) {
         bodyWrapper.addEventListener('scroll', onBodyScroll)
-        const scrollWidth = bodyWrapper.scrollWidth
-        if (scrollWidth > 0) tableContentWidth.value = scrollWidth
       }
     }
+    updateScrollbarWidth()
   }, 500)
 })
 
 onUnmounted(() => {
   clearInterval(clockTimer)
   window.removeEventListener('beforeunload', flushSync)
+  window.removeEventListener('resize', updateScrollbarWidth)
   flushSync()
 })
 </script>
