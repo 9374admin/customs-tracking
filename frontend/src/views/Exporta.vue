@@ -19,7 +19,11 @@
         </div>
       </div>
 
-      <el-table :data="data" stripe border v-loading="loading"
+      <div ref="topScrollbar" class="top-scrollbar" @scroll="onTopScroll">
+        <div :style="{ width: tableContentWidth + 'px', height: '1px' }"></div>
+      </div>
+
+      <el-table ref="mainTable" :data="data" stripe border v-loading="loading"
         max-height="calc(100vh - 260px)"
         @selection-change="onSelectionChange">
         <el-table-column type="selection" width="40" v-if="auth.isAdmin" />
@@ -365,7 +369,27 @@ const loading = ref(false)
 const showCreate = ref(false)
 const creating = ref(false)
 const currentTime = ref('')
+const topScrollbar = ref(null)
+const mainTable = ref(null)
+const tableContentWidth = ref(3000)
+let syncingScroll = false
 let clockTimer = null
+
+function onTopScroll() {
+  if (syncingScroll || !topScrollbar.value || !mainTable.value) return
+  syncingScroll = true
+  const bodyWrapper = mainTable.value.$el.querySelector('.el-table__body-wrapper')
+  if (bodyWrapper) bodyWrapper.scrollLeft = topScrollbar.value.scrollLeft
+  syncingScroll = false
+}
+
+function onBodyScroll() {
+  if (syncingScroll || !topScrollbar.value || !mainTable.value) return
+  syncingScroll = true
+  const bodyWrapper = mainTable.value.$el.querySelector('.el-table__body-wrapper')
+  if (bodyWrapper) topScrollbar.value.scrollLeft = bodyWrapper.scrollLeft
+  syncingScroll = false
+}
 
 const STEP_COLS = [
 
@@ -662,6 +686,16 @@ onMounted(() => {
   clockTimer = setInterval(updateClock, 1000)
   loadData()
   window.addEventListener('beforeunload', flushSync)
+  setTimeout(() => {
+    if (mainTable.value) {
+      const bodyWrapper = mainTable.value.$el.querySelector('.el-table__body-wrapper')
+      if (bodyWrapper) {
+        bodyWrapper.addEventListener('scroll', onBodyScroll)
+        const scrollWidth = bodyWrapper.scrollWidth
+        if (scrollWidth > 0) tableContentWidth.value = scrollWidth
+      }
+    }
+  }, 500)
 })
 
 onUnmounted(() => {

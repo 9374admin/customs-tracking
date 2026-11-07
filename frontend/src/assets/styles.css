@@ -4,6 +4,12 @@ body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; font-si
 .blue-msg { color: #1a5276 !important; font-weight: 700 !important; font-size: 15px !important; }
 .blue-msg .el-message__content { color: #1a5276 !important; font-weight: 700 !important; }
 
+.top-scrollbar { overflow-x: auto; overflow-y: hidden; height: 16px; margin-bottom: 0; border-bottom: 1px solid #ebeef5; position: relative; }
+.top-scrollbar::-webkit-scrollbar { height: 14px; }
+.top-scrollbar::-webkit-scrollbar-track { background: #f5f7fa; }
+.top-scrollbar::-webkit-scrollbar-thumb { background: #c0c4cc; border-radius: 7px; }
+.top-scrollbar::-webkit-scrollbar-thumb:hover { background: #909399; }
+
 .step-status-selecionar { color: #909399; }
 .step-status-em_curso { color: #e6a200; font-weight: 600; }
 .step-status-concluido { color: #006400; font-weight: 600; }
