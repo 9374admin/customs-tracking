@@ -13,6 +13,21 @@ if (savedToken) {
   axios.defaults.headers.common['Authorization'] = 'Bearer ' + savedToken
 }
 
+axios.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response && err.response.status === 401) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      delete axios.defaults.headers.common['Authorization']
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
+    }
+    return Promise.reject(err)
+  }
+)
+
 const app = createApp(App)
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
