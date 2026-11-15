@@ -45,9 +45,11 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="empresa" label="Empresa" width="90">
+        <el-table-column prop="empresa" label="Empresa" width="90" sortable>
           <template #default="{ row }">
-            <el-input v-model="row.empresa" size="small" style="font-size: 13px;" @change="saveField(row, 'empresa')" v-if="auth.canEdit" />
+            <el-select v-model="row.empresa" size="small" filterable allow-create default-first-option style="width: 100%;" @change="saveField(row, 'empresa')" v-if="auth.canEdit">
+              <el-option v-for="e in empresas" :key="e" :label="e" :value="e" />
+            </el-select>
             <span v-else>{{ row.empresa }}</span>
           </template>
         </el-table-column>
@@ -167,7 +169,7 @@
 
     <el-dialog v-model="showCreate" title="Novo Processo" width="500px">
       <el-form label-width="140px">
-        <el-form-item label="Empresa"><el-input v-model="createForm.empresa" /></el-form-item>
+        <el-form-item label="Empresa"><el-select v-model="createForm.empresa" filterable allow-create default-first-option placeholder="Selecionar ou digitar" style="width: 100%;"><el-option v-for="e in empresas" :key="e" :label="e" :value="e" /></el-select></el-form-item>
         <el-form-item label="Nº BL"><el-input v-model="createForm.bl_number" /></el-form-item>
         <el-form-item label="Nº Contentor"><el-input v-model="createForm.container_number" /></el-form-item>
         <el-form-item label="Data Prevista"><el-date-picker v-model="createForm.prevista_date" type="date" value-format="YYYY-MM-DD" style="width: 100%;" /></el-form-item>
@@ -538,7 +540,18 @@ async function loadData() {
   loading.value = true
   try {
     const res = await axios.get('/api/processes', { params: { search: search.value, empresa: filterEmpresa.value, page: page.value, limit: limit.value } })
-    data.value = res.data.data
+    const sorted = res.data.data.sort((a, b) => {
+      const ea = (a.empresa || '').toLowerCase()
+      const eb = (b.empresa || '').toLowerCase()
+      if (ea < eb) return -1
+      if (ea > eb) return 1
+      const da = a.prevista_date || ''
+      const db = b.prevista_date || ''
+      if (da < db) return 1
+      if (da > db) return -1
+      return 0
+    })
+    data.value = sorted
     total.value = res.data.total
   } catch (e) {
     ElMessage.error('Erro ao carregar dados')
