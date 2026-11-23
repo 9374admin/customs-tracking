@@ -521,8 +521,8 @@ function isDetencaoActive(row) {
 }
 
 function rowClassName({ row }) {
-
-  if (row.fee_status === 'pago') return 'row-pago'
+  const fechoStep = row.steps?.find(s => s.step_name === 'fecho')
+  if (fechoStep && fechoStep.status === 'concluido') return 'row-pago'
   return ''
 }
 
