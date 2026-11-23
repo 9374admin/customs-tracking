@@ -521,7 +521,7 @@ function isDetencaoActive(row) {
 }
 
 function rowClassName({ row }) {
-  if (isDetencaoActive(row)) return 'row-detencao-active'
+
   if (row.fee_status === 'pago') return 'row-pago'
   return ''
 }

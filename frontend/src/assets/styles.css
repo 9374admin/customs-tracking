@@ -41,9 +41,7 @@ body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; font-si
 .el-table .row-pago td {
   background-color: #c8efd0 !important;
 }
-.el-table .row-detencao-active td {
-  background-color: #ffcccc !important;
-}
+
 
 .el-tag--success {
   background-color: #c8efd0 !important;
